@@ -12,6 +12,10 @@
 #   RENDER=1 bash movies_all.sh         draw every movie again from its saved trajectories (.npz): no solve, CPU only;
 #                                       one small CPU job (or here with LOCAL=1).  Also redraws the four older movies
 #                                       of movies.sh in results/movies/ with the three views.
+#   COMPARE=1 bash movies_all.sh        two more movies per movie, for comparison: <movie>_MFS.mp4 (MFS alone, the truth)
+#                                       and <movie>_model.mp4 (the operator alone), same run, same camera and colours.
+#                                       Drawn from the saved trajectories (no new solve): one small CPU job per movie,
+#                                       started after that movie's simulation job if it is still queued or running.
 #
 # Output: <repo>/results/movies_all/<movie>.mp4 (.gif without ffmpeg), <movie>.npz (trajectories), <movie>.png (a still from the
 # middle of the run), and movies_all/INDEX.md (what each movie shows).  Logs: <repo>/logs/<cell>_U_movie_<movie>_<job>.out.
@@ -72,6 +76,52 @@ submit() {  # job name, workspace, gpu (1/0), time, command
       --wrap="source $HERE/env.sh; module load FFmpeg 2>/dev/null || true; $5")"
 }
 
+write_index() {  # the list of movies, with the MFS-only and model-only versions when they are made
+  {
+    echo "# Movies of every cell"
+    echo
+    echo "Three views in every frame: looking along x, along y, and along z (from above).  Solid = MFS (the truth, fine clouds);"
+    echo "black outline = the trained operator of that row (positive definite); lines = paths seen from the falling camera."
+    echo "Two-body: far field + two-body model.  Full body: + many-body model (+ self model).  Made by \`movies_all.sh\`."
+    echo "MFS alone / model alone: the same run drawn with only the truth, or only the operator (\`COMPARE=1\`), same camera."
+    echo
+    echo "| movie | MFS alone | model alone | cell | particles | what it shows |"
+    echo "|---|---|---|---|---|---|"
+    for m in "${MOVIES[@]}"; do
+      IFS='|' read -r name cell ws cs kind shapes tilt what <<<"$m"
+      echo "| [$name]($name.mp4) | [MFS](${name}_MFS.mp4) | [model](${name}_model.mp4) | $cell | $shapes | $what |"
+    done
+  } > "$OUT/INDEX.md"
+}
+
+# ------------------------------------------------------------------------------------------------- MFS alone, model alone
+if [ -n "${COMPARE:-}" ]; then
+  write_index
+  n=0
+  for m in "${MOVIES[@]}"; do
+    IFS='|' read -r name cell ws cs kind shapes tilt what <<<"$m"
+    selected "$name" "$cell" || continue
+    sim="${cell}_U_movie_${name#*_}"
+    dep=$(squeue -h -u "$USER" -n "$sim" -o %i 2>/dev/null | head -1 || true)
+    if [ -z "$dep" ] && [ ! -f "$OUT/$name.npz" ] && [ -z "${DRY:-}" ]; then
+      echo "skip  $name: its simulation job $sim is not queued and $OUT/$name.npz does not exist (did it fail? see logs/${sim}_*.out)" >&2
+      continue
+    fi
+    cmd="test -f $OUT/$name.npz || { echo 'no $OUT/$name.npz: the simulation job did not finish'; exit 1; }; "
+    cmd+="python $HERE/movie.py --render $OUT/$name.npz --only mfs --out $OUT/${name}_MFS.mp4 --still 0.5 --title '$cell: $what'; "
+    cmd+="python $HERE/movie.py --render $OUT/$name.npz --only model --out $OUT/${name}_model.mp4 --still 0.5 --title '$cell: $what'"
+    if [ -n "${DRY:-}" ]; then echo "DRY   ${sim}_cmp  ${dep:+[after job $dep]}  cd $HERE && $cmd"
+    elif [ -n "${LOCAL:-}" ]; then echo "run   ${sim}_cmp"; (cd "$HERE" && eval "$cmd")
+    else
+      echo "sub   ${sim}_cmp  job $(sbatch --parsable -J "${sim}_cmp" --output="$ROOT/logs/%x_%j.out" --chdir="$HERE" --mem=16G --time=2:00:00 \
+          ${dep:+--dependency=afterany:$dep} --wrap="source $HERE/env.sh; module load FFmpeg 2>/dev/null || true; $cmd")${dep:+  (after the simulation, job $dep)}"
+    fi
+    n=$((n + 1))
+  done
+  echo "$n comparison jobs.  When done: ls $OUT/*_MFS.mp4 $OUT/*_model.mp4 ; the list is in $OUT/INDEX.md"
+  exit 0
+fi
+
 # ------------------------------------------------------------------------------------------------- redraw only
 if [ -n "${RENDER:-}" ]; then
   cmd=""
@@ -92,20 +142,7 @@ if [ -n "${RENDER:-}" ]; then
 fi
 
 # ------------------------------------------------------------------------------------------------- simulate + draw
-{
-  echo "# Movies of every cell"
-  echo
-  echo "Three views in every frame: looking along x, along y, and along z (from above).  Solid = MFS (the truth, fine clouds);"
-  echo "black outline = the trained operator of that row (positive definite); lines = paths seen from the falling camera."
-  echo "Two-body: far field + two-body model.  Full body: + many-body model (+ self model).  Made by \`movies_all.sh\`."
-  echo
-  echo "| movie | cell | particles | what it shows |"
-  echo "|---|---|---|---|"
-  for m in "${MOVIES[@]}"; do
-    IFS='|' read -r name cell ws cs kind shapes tilt what <<<"$m"
-    echo "| [$name]($name.mp4) | $cell | $shapes | $what |"
-  done
-} > "$OUT/INDEX.md"
+write_index
 
 n=0
 for m in "${MOVIES[@]}"; do
