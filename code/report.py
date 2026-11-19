@@ -188,7 +188,7 @@ def build(acc: str, ref: str) -> str:
         if not files:
             continue
         lines += [f"### Case {case} (cells {c2} and {cf}): {what}", ""]
-        order = {"CLOUDS": 0, "PAIR": 1, "SUSPENSION": 2, "DYNAMICS": 3, "CHECK": 4, "PD": 5, "PSD": 6, "CEILING": 7}
+        order = {"CLOUDS": 0, "PAIR": 1, "SUSPENSION": 2, "DYNAMICS": 3, "CHECK": 4, "PD": 5, "PSD": 6, "SPEED": 7, "CEILING": 8}
         for f in sorted(files, key=lambda p: (order.get(p.stem.split("_")[0], 9), p.name)):
             body = f.read_text(encoding="utf-8").strip().splitlines()
             lines += ["#" * 3 + ln if ln.startswith("#") else ln for ln in body] + [""]

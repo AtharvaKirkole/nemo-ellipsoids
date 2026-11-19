@@ -23,6 +23,7 @@ Runs on a CPU in about a minute, from the workspace (needs the coarse clouds in 
                independent of particle order; a suspension of particles enlarged by lam scales exactly
   stress model the strain / stresslet blocks: the same symmetries, reciprocity with the force blocks, scaling
   periodic box Hasimoto's constant, independence of the Ewald splitting, a huge box = free space, no origin
+  fast         the matrix-free operator (fast.py) gives the dense operator's velocities in every mode
   positive     psd.py's projection: every eigenvalue above the floor; never further from ANY admissible truth (the
   definiteness   no-loss guarantee); untouched and bit for bit the same when already positive definite; idempotent;
                independent of the square root used; 1-Lipschitz; exactly covariant under enlarging the particles.  The
@@ -615,6 +616,21 @@ def test_psd_grand():
     C = psd._congruence(Gpb[:, 6:, :, 6:].reshape(5 * N, 5 * N), W)
     assert float(torch.linalg.eigvalsh(C)[0]) >= 0.5 * psd.FLOOR
     assert float(psd.spectrum(Gpb[:, :6, :, :6].reshape(6 * N, 6 * N), shapes, R, "medium")[0]) >= 0.5 * psd.FLOOR
+
+
+@each_form
+def test_fast_operator(form):
+    """fast.FastOperator (matrix-free: grid far field, cell lists) gives the dense operator's velocities in every mode."""
+    from fast import FastOperator
+    rng = np.random.default_rng(34)
+    shapes = assign_shapes(form.test_kinds, 24, rng)
+    pos, q = uniform_config(shapes, 0.1, rng)
+    op = small_operator(form)
+    fast = FastOperator(op, dtype=torch.float64)
+    F = rng.normal(size=(len(pos), 6))
+    for mode in ("far", "pair", "full"):
+        ref = op.apply(pos, q, shapes, F, mode, psd=False)
+        assert np.linalg.norm(fast.apply(pos, q, shapes, F, mode) - ref) / np.linalg.norm(ref) < 1e-3, mode
 
 
 def main():

@@ -162,6 +162,7 @@ Stated so that nobody is surprised by them:
 | `farfield.py` | the 12-point far field of any two ellipsoids (+ stresslets and strain) |
 | `pair.py` | the two-body model, both forms (spheroid: 12 inputs; triaxial: 22 inputs) |
 | `nbody.py` | the many-body correction of cross blocks and of self blocks |
+| `fast.py` | the operator without building the matrix: far field by a grid sum, learned parts over cell lists; far field and + two-body to ~10^6 particles, + many-body to ~10^4; no positive-definiteness step |
 | `mobility.py`, `psd.py` | the assembled operator: far field, + two-body, + many-body; made positive definite |
 | `makedata.py`, `train.py` | data generation and training (resumable) |
 | `evaluate.py`, `report.py` | every test and the combined report |

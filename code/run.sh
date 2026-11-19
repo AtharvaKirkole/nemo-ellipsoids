@@ -57,9 +57,10 @@ if [ -n "${SMOKE:-}" ]; then
   N_TRAIN=48; N_TEST=16; STEPS=150; WIDTH=16; CL="--plan smoke --per 2"; NB="--epochs 3 --width 16 --bands 4 --batch 256 --eval-every 1"; NS="--epochs 3 --width 16 --bands 4 --batch 64 --eval-every 1"
   F3="--N 10 --phi 0.05 0.1 --seeds 2 --ref-seeds 1"; F4="--N 6 10 --phi 0.05 --seeds 1 --ref-seeds 1"
   DYN="--steps 4"; PDYN="--steps 4"; CHK="--N 6"; CEIL="--N 8 --phi 0.05 --seeds 1"; PD="--N 6 10 --phi 0.05 0.1 --seeds 3 --max-pairs 8"
+  SPD="--N 300 1000 --dense-max 300"
 else
   CL=""; NB=""; NS=""; F3="--ref-seeds 1"; F4="--N 50 100 200 300 --phi 0.05 0.1 0.15 0.2 --seeds 5 --ref-seeds 1 --ref-max-n 100"
-  DYN=""; PDYN="--contact 1.5 --steps 1500"; CHK=""; CEIL=""; PD=""
+  DYN=""; PDYN="--contact 1.5 --steps 1500"; CHK=""; CEIL=""; PD=""; SPD=""
 fi
 mkdir -p "$ROOT/logs" "$RES"
 EXCL=${EXCL-$(sinfo -h -N -o %N 2>/dev/null | grep '^nal' | sort -u | paste -sd, - || true)}
@@ -179,6 +180,7 @@ case_run() {  # cell, name, width, steps, "a:b:n ..." train, "a:b ..." unseen te
   evalj $fb "check_$name" 1 64G "$nj" CHECK_$name.md "check $mo --name $name $CHK"
   evalj $fb "pd_$name" 1 64G "$nj" PD_$name.md "pd $mo --name $name --sets$tests $PD"
   [ -n "${EVAL_ONLY:-}" ] || evalj $fb "psd_$name" 1 64G "$nj" PSD_$name.md "psd $mo --name $name --clusters $name"   # needs the held-out clusters
+  evalj $fb "speed_$name" 1 128G "$nj" SPEED_$name.md "speed $mo --name $name $SPD"
   evalj $fb "ceiling_$name" 2 128G "$nj" CEILING_$name.md "ceiling $mo --name $name $CEIL"
 }
 same() { local n=$1 s out=""; shift; for s in "$@"; do out+=" $s:$s:$n"; done; echo "$out"; }

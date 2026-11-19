@@ -37,6 +37,8 @@ pd          positive definiteness of the RAW operator (before psd.py's projectio
 psd         the projection against the truth, on the held-out clusters (seed % 10 == 0: never trained on) of the case:
             the truth's smallest eigenvalue, the raw operator's, Weyl's bound |M - T|_2, and every error before and after
             the projection (it can only decrease in the metric of the isolated particles).
+speed       the matrix-free operator (fast.py) against the dense one (same models, N 200, every mode), then the time of
+            one application of far field / + two-body for N up to 10^6 (and of the dense operator while it fits).
 check       symmetry of the grand mobility matrix (exact by construction), its smallest eigenvalue before and after the
             projection against MFS's, equivariance under a rotation of everything.
 
@@ -849,6 +851,76 @@ def eval_psd(args) -> None:
           dict(out, conditions={"models": mcond, "truth": tcond, "clusters": args.clusters}))
 
 
+def eval_speed(args) -> None:
+    """fast.FastOperator: (1) the same velocities as the dense operator (raw, before the positive-definiteness step) on
+    random suspensions of N 200; (2) wall time of one application U = M F for growing N, far field and + two-body, on
+    a jittered lattice (fast.lattice_config); the dense operator (build the matrix + multiply) while it fits."""
+    from fast import FastOperator, lattice_config
+    op, modes = operator(args)
+    fast = FastOperator(op)
+    dev = op.dev
+    sync = (lambda: torch.cuda.synchronize()) if dev.type == "cuda" else (lambda: None)
+    acc = {}
+    for seed in range(3):
+        rng = np.random.default_rng([20261119, seed])
+        shapes = assign_shapes(args.kinds, 200, rng)
+        made = uniform_config(shapes, 0.1, rng)
+        if made is None:
+            continue
+        pos, q = made
+        F = random_loads(rng, 200)[..., 0]
+        for mode in modes:
+            ref = op.apply(pos, q, shapes, F, mode, psd=False)
+            got = fast.apply(pos, q, shapes, F, mode)
+            acc.setdefault(mode, []).append(float(np.linalg.norm(got - ref) / np.linalg.norm(ref)))
+    rows, out = [], {"agreement": {m: max(v) for m, v in acc.items()}, "timing": {}}
+    for N in args.N:
+        pos, q, shapes, phi = lattice_config(args.kinds, N, args.phi[0], np.random.default_rng(N))
+        F = np.random.default_rng(N + 1).normal(size=(N, 6))
+        cell = {"phi": phi}
+        for mode in [m for m in modes if m != "full"]:
+            try:
+                fast.apply(pos[:min(N, 1000)], q[:min(N, 1000)], shapes[:min(N, 1000)], F[:min(N, 1000)], mode)       # warm up
+                sync()
+                t0 = time.perf_counter()
+                fast.apply(pos, q, shapes, F, mode)
+                sync()
+                cell[f"fast_{mode}"] = time.perf_counter() - t0
+            except RuntimeError as e:                                       # out of memory: report, go on
+                cell[f"fast_{mode}"] = "out of memory" if "out of memory" in str(e) else str(e)[:60]
+                torch.cuda.empty_cache() if dev.type == "cuda" else None
+            if N <= args.dense_max:
+                try:
+                    sync()
+                    t0 = time.perf_counter()
+                    op.apply(pos, q, shapes, F, mode, psd=False)
+                    sync()
+                    cell[f"dense_{mode}"] = time.perf_counter() - t0
+                except RuntimeError as e:
+                    cell[f"dense_{mode}"] = "out of memory" if "out of memory" in str(e) else str(e)[:60]
+                    torch.cuda.empty_cache() if dev.type == "cuda" else None
+        out["timing"][N] = cell
+        fmt = lambda x: f"{x:.3g} s" if isinstance(x, float) else (x or "-")
+        rows.append(f"| {N:,} | {phi:.3f} | " + " | ".join(fmt(cell.get(k)) for k in ("fast_far", "fast_pair", "dense_far", "dense_pair")) + " |")
+        print(rows[-1], flush=True)
+    gpu = torch.cuda.get_device_name(0) if dev.type == "cuda" else "CPU"
+    lines = [f"# Matrix-free operator (fast.py), {', '.join(args.kinds)}", "",
+             "## Same answer as the dense operator", "",
+             "Largest relative difference |U_fast - U_dense| / |U_dense| over 3 random suspensions of 200 particles (phi 0.1), "
+             "random unit forces and torques, the dense operator without the positive-definiteness step.", "",
+             "| operator | difference |", "|---|---|"] + [f"| {m} | {v:.1e} |" for m, v in out["agreement"].items()] + [
+             "", f"## Time of one application U = M F ({gpu})", "",
+             "| N | phi | fast: far field | fast: + two-body | dense: far field | dense: + two-body |", "|---|---|---|---|---|---|"] + rows
+    mlines, mcond = model_conditions(args)
+    cond = ["", "## Conditions", ""] + mlines + [
+        f"- **Timing configurations**: N particles of {', '.join(args.kinds)} on a jittered cubic lattice (spacing from phi "
+        f"{args.phi[0]:g}, never below 2.1 x the longest semi-axis), random orientations; one warm-up call, then one timed call.",
+        "- **Fast operator**: far field by the Hasimoto-split 12-point sum (grid xi 0.35, h 1.0, order 6, float32), learned "
+        "parts over a cell-list pair list, float64; no positive-definiteness step (it needs the matrix).",
+        f"- **Dense operator**: the (6N, 6N) matrix built and multiplied, float64; only for N <= {args.dense_max}."]
+    write(Path(args.results) / f"SPEED_{args.name or '_'.join(args.kinds)}", lines + cond, dict(out, conditions={"models": mcond, "gpu": gpu}))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -885,6 +957,11 @@ def main():
     a.add_argument("--seeds", type=int, default=20)
     a.add_argument("--sets", nargs="*", default=[], help="pair test sets: the operator on two particles alone, against MFS")
     a.add_argument("--max-pairs", type=int, default=400)
+    a = sub.add_parser("speed", parents=[common])
+    a.add_argument("--kinds", nargs="+", required=True)
+    a.add_argument("--N", type=int, nargs="+", default=[1000, 10000, 100000, 1000000])
+    a.add_argument("--phi", type=float, nargs="+", default=[0.05])
+    a.add_argument("--dense-max", type=int, default=5000)
     a = sub.add_parser("psd", parents=[common])
     a.add_argument("--clusters", required=True, help="cluster tag of makedata.py clusters (the case's name)")
     a.add_argument("--kinds", nargs="+", required=True)
@@ -898,7 +975,7 @@ def main():
     a.add_argument("--steps", type=int, default=600)
     args = ap.parse_args()
     {"clouds": eval_clouds, "pair": eval_pair, "suspension": eval_suspension, "dynamics": eval_dynamics, "check": eval_check, "pd": eval_pd,
-     "ceiling": eval_ceiling, "psd": eval_psd}[args.cmd](args)
+     "ceiling": eval_ceiling, "psd": eval_psd, "speed": eval_speed}[args.cmd](args)
 
 
 if __name__ == "__main__":
