@@ -37,7 +37,7 @@ import numpy as np
 import torch
 
 from evaluate import SIX_PI, axis_error_deg, operator, rk4_step
-from geometry import (MARGIN, axes_of, contact_factor, frame_quat, grown_config, is_spheroid, min_contact,
+from geometry import (MARGIN, SHAPES, axes_of, contact_factor, frame_quat, grown_config, is_spheroid, min_contact,
                       quat_to_matrix, ring_config, shape_matrix, symmetry_axis)
 from truth import Truth
 
@@ -125,6 +125,9 @@ def main():
     if args.render:
         z = np.load(args.render)
         get = lambda k, d: str(z[k]) if k in z.files else d
+        if "axes" in z.files:                    # the shapes travel with the trajectories: drawing needs no workspace
+            for s, ax in zip(z["shapes"], z["axes"]):
+                SHAPES.setdefault(str(s), tuple(float(a) for a in ax))
         render(args, z["Xt"], z["Qt"], z["Xm"], z["Qm"], [str(x) for x in z["shapes"]], float(z["dt"]), get("label", "operator"),
                get("case", ""), get("solid", "MFS"), args.title or get("title", ""), get("stopped", ""))
         return
@@ -154,7 +157,8 @@ def main():
     Xm, Qm, _ = integrate(lambda x, qq: op.apply(x, qq, shapes, F, mode), shapes, pos, q, args.dt, len(Xt) - 1)
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     npz = args.out.rsplit(".", 1)[0] + ".npz"
-    np.savez_compressed(npz, Xt=Xt, Qt=Qt, Xm=Xm, Qm=Qm, shapes=np.array(shapes), dt=args.dt, label=label, case=args.case,
+    np.savez_compressed(npz, Xt=Xt, Qt=Qt, Xm=Xm, Qm=Qm, shapes=np.array(shapes), axes=np.array([axes_of(s) for s in shapes]),
+                        dt=args.dt, label=label, case=args.case,
                         title=args.title or "", stopped=why, pair=str(args.pair), nbody=str(args.nbody), nself=str(args.nself))
     n = min(len(Xt), len(Xm)) - 1
     print(f"MFS ran {len(Xt) - 1} steps, the operator {len(Xm) - 1}; at step {n}: position error "

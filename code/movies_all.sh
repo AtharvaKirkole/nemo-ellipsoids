@@ -9,12 +9,12 @@
 #   bash movies_all.sh 2A_obl           only this movie
 #   DRY=1 bash movies_all.sh            print the jobs, submit nothing
 #   LOCAL=1 bash movies_all.sh 1C       run here, one after the other (needs a GPU to finish in reasonable time)
-#   RENDER=1 bash movies_all.sh         draw every movie again from its saved trajectories (.npz): no solve, CPU only;
-#                                       one small CPU job (or here with LOCAL=1).  Also redraws the four older movies
+#   RENDER=1 bash movies_all.sh         draw every movie again from its saved trajectories (.npz): no solve;
+#                                       one job on a GPU node (or here with LOCAL=1).  Also redraws the four older movies
 #                                       of movies.sh in results/movies/ with the three views.
 #   COMPARE=1 bash movies_all.sh        two more movies per movie, for comparison: <movie>_MFS.mp4 (MFS alone, the truth)
 #                                       and <movie>_model.mp4 (the operator alone), same run, same camera and colours.
-#                                       Drawn from the saved trajectories (no new solve): one small CPU job per movie,
+#                                       Drawn from the saved trajectories (no new solve): one small job per movie,
 #                                       started after that movie's simulation job if it is still queued or running.
 #
 # Output: <repo>/results/movies_all/<movie>.mp4 (.gif without ffmpeg), <movie>.npz (trajectories), <movie>.png (a still from the
@@ -102,6 +102,11 @@ if [ -n "${COMPARE:-}" ]; then
     IFS='|' read -r name cell ws cs kind shapes tilt what <<<"$m"
     selected "$name" "$cell" || continue
     sim="${cell}_U_movie_${name#*_}"
+    W=$SPH; [ "$ws" = tri ] && W=$TRI                 # run in the movie's workspace: its shapes.json registers the shapes
+    if [ -f "$OUT/${name}_MFS.mp4" ] && [ -f "$OUT/${name}_model.mp4" ] && [ -z "${REDO:-}" ]; then
+      echo "done  $name: ${name}_MFS.mp4 and ${name}_model.mp4 exist (REDO=1 to draw them again)" >&2
+      continue
+    fi
     dep=$(squeue -h -u "$USER" -n "$sim" -o %i 2>/dev/null | head -1 || true)
     if [ -z "$dep" ] && [ ! -f "$OUT/$name.npz" ] && [ -z "${DRY:-}" ]; then
       echo "skip  $name: its simulation job $sim is not queued and $OUT/$name.npz does not exist (did it fail? see logs/${sim}_*.out)" >&2
@@ -110,11 +115,12 @@ if [ -n "${COMPARE:-}" ]; then
     cmd="test -f $OUT/$name.npz || { echo 'no $OUT/$name.npz: the simulation job did not finish'; exit 1; }; "
     cmd+="python $HERE/movie.py --render $OUT/$name.npz --only mfs --out $OUT/${name}_MFS.mp4 --still 0.5 --title '$cell: $what'; "
     cmd+="python $HERE/movie.py --render $OUT/$name.npz --only model --out $OUT/${name}_model.mp4 --still 0.5 --title '$cell: $what'"
-    if [ -n "${DRY:-}" ]; then echo "DRY   ${sim}_cmp  ${dep:+[after job $dep]}  cd $HERE && $cmd"
-    elif [ -n "${LOCAL:-}" ]; then echo "run   ${sim}_cmp"; (cd "$HERE" && eval "$cmd")
+    if [ -n "${DRY:-}" ]; then echo "DRY   ${sim}_cmp  ${dep:+[after job $dep]}  cd $W && $cmd"
+    elif [ -n "${LOCAL:-}" ]; then echo "run   ${sim}_cmp"; (cd "$W" && eval "$cmd")
     else
-      echo "sub   ${sim}_cmp  job $(sbatch --parsable -J "${sim}_cmp" --output="$ROOT/logs/%x_%j.out" --chdir="$HERE" --mem=16G --time=2:00:00 \
-          ${dep:+--dependency=afterany:$dep} --wrap="source $HERE/env.sh; module load FFmpeg 2>/dev/null || true; $cmd")${dep:+  (after the simulation, job $dep)}"
+      # a GPU node like every other job: on the CPU-only (amr) nodes this PyTorch build dies with "Illegal instruction"
+      echo "sub   ${sim}_cmp  job $(sbatch --parsable -J "${sim}_cmp" --output="$ROOT/logs/%x_%j.out" --chdir="$W" --gres=gpu:1 ${EXCL:+--exclude=$EXCL} \
+          --mem=16G --time=2:00:00 ${dep:+--dependency=afterany:$dep} --wrap="source $HERE/env.sh; module load FFmpeg 2>/dev/null || true; $cmd")${dep:+  (after the simulation, job $dep)}"
     fi
     n=$((n + 1))
   done
@@ -129,15 +135,16 @@ if [ -n "${RENDER:-}" ]; then
     IFS='|' read -r name cell ws cs kind shapes tilt what <<<"$m"
     selected "$name" "$cell" || continue
     [ -f "$OUT/$name.npz" ] || { echo "skip  $name: no $OUT/$name.npz yet" >&2; continue; }
-    cmd+="python $HERE/movie.py --render $OUT/$name.npz --out $OUT/$name.mp4 --still 0.5 --title '$cell: $what'; "
+    W=$SPH; [ "$ws" = tri ] && W=$TRI
+    cmd+="(cd $W && python $HERE/movie.py --render $OUT/$name.npz --out $OUT/$name.mp4 --still 0.5 --title '$cell: $what'); "
   done
   if [ "$WANT" = "  " ]; then
     for f in "$ROOT"/results/movies/*.npz; do
-      [ -f "$f" ] && cmd+="python $HERE/movie.py --render $f --out ${f%.npz}_3views.mp4 --still 0.5; "
+      [ -f "$f" ] && cmd+="(cd $SPH && python $HERE/movie.py --render $f --out ${f%.npz}_3views.mp4 --still 0.5); "
     done
   fi
   [ -n "$cmd" ] || { echo "nothing to redraw"; exit 0; }
-  submit ALL_U_movie_redraw "$HERE" 0 3:59:00 "$cmd"
+  submit ALL_U_movie_redraw "$HERE" 1 3:59:00 "$cmd"
   exit 0
 fi
 
