@@ -29,8 +29,10 @@
 #   selfrows   many-body training rows of the SELF blocks, from the same clusters
 #   nself      the many-body self model (what keeps the operator positive definite)
 #   ref        the first $NREF configurations of every test set solved again with the finer ($REF) clouds
-#   eval       clouds, pair test, Fig. 3, Fig. 4, ring and pair dynamics, structural check, ceiling -- each with the
-#              error of MFS itself under the same conditions -- then report.py -> results/REPORT.md
+#   eval       clouds, pair test, Fig. 3, Fig. 4, ring and pair dynamics, structural check, positive definiteness (raw
+#              operator, and the projection against MFS on the held-out clusters; not with EVAL_ONLY, which has no
+#              clusters), ceiling -- each with the error of MFS itself under the same conditions -- then report.py
+# Every operator is positive definite: the last step of each matrix is psd.py's projection (see mobility.py).
 #
 #   EVAL_ONLY=1 bash run.sh          use the trained models already in the workspaces (models/ of the repo, unpacked
 #                                    by setup.sh): no training data, no clusters, no training -- only the test sets,
@@ -176,6 +178,7 @@ case_run() {  # cell, name, width, steps, "a:b:n ..." train, "a:b ..." unseen te
   evalj $fb "pairdyn_$name" 1 64G "$nj" DYNAMICS_pair_$name.md "dynamics $mo --name $name --case pair $PDYN"
   evalj $fb "check_$name" 1 64G "$nj" CHECK_$name.md "check $mo --name $name $CHK"
   evalj $fb "pd_$name" 1 64G "$nj" PD_$name.md "pd $mo --name $name --sets$tests $PD"
+  [ -n "${EVAL_ONLY:-}" ] || evalj $fb "psd_$name" 1 64G "$nj" PSD_$name.md "psd $mo --name $name --clusters $name"   # needs the held-out clusters
   evalj $fb "ceiling_$name" 2 128G "$nj" CEILING_$name.md "ceiling $mo --name $name $CEIL"
 }
 same() { local n=$1 s out=""; shift; for s in "$@"; do out+=" $s:$s:$n"; done; echo "$out"; }

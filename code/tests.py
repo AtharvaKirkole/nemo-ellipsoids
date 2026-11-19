@@ -21,6 +21,14 @@ Runs on a CPU in about a minute, from the workspace (needs the coarse clouds in 
                continuous when a second neighbour leaves
   operator     symmetric grand mobility in every mode; equivariant under a rotation of the whole configuration;
                independent of particle order; a suspension of particles enlarged by lam scales exactly
+  stress model the strain / stresslet blocks: the same symmetries, reciprocity with the force blocks, scaling
+  periodic box Hasimoto's constant, independence of the Ewald splitting, a huge box = free space, no origin
+  positive     psd.py's projection: every eigenvalue above the floor; never further from ANY admissible truth (the
+  definiteness   no-loss guarantee); untouched and bit for bit the same when already positive definite; idempotent;
+               independent of the square root used; 1-Lipschitz; exactly covariant under enlarging the particles.  The
+               operator in every mode on a dense suspension whose raw sum is indefinite: positive definite, symmetric,
+               rotation equivariant, independent of particle order; the far field untouched.  The stress grand matrix:
+               both diagonal parts positive semi-definite, the coupling kept
 """
 from __future__ import annotations
 
@@ -505,6 +513,108 @@ def test_periodic_operator(form):
     assert rel(-Cm[:, :6, :, 6:].permute(2, 3, 0, 1), Cm[:, 6:, :, :6]) < 1e-10
     assert rel(Cm[:, 6:, :, 6:].permute(2, 3, 0, 1), Cm[:, 6:, :, 6:]) < 1e-10
     assert rel(periodic_M(op, pos + shift, q, shapes, L, "full", sm), G) < 1e-8
+
+
+# ----------------------------------------------------------------------------------------------- positive definiteness
+def _roots(D: torch.Tensor):
+    """Symmetric W = D^-1/2 and W^-1 per block of D (N, b, b)."""
+    w, V = torch.linalg.eigh(D)
+    return (V / w.sqrt()[:, None, :]) @ V.transpose(1, 2), (V * w.sqrt()[:, None, :]) @ V.transpose(1, 2)
+
+
+def _blockdiag_congruence(X: torch.Tensor, A: torch.Tensor) -> torch.Tensor:
+    N, b = A.shape[:2]
+    return torch.einsum("tij,tjsk,slk->tisl", A, X.reshape(N, b, N, b), A).reshape(N * b, N * b)
+
+
+def test_psd_projection():
+    """psd.project: exact floor, never further from any admissible truth, untouched when already positive definite,
+    idempotent, independent of the square root used, 1-Lipschitz, covariant under enlarging every particle."""
+    import psd
+    rng = np.random.default_rng(31)
+    N, b = 5, 6
+    for trial in range(40):
+        A = torch.as_tensor(rng.normal(size=(N, b, b)))
+        D = A @ A.transpose(1, 2) + 0.5 * torch.eye(b)                  # isolated blocks: any positive definite ones
+        W, Wi = _roots(D)
+        X = torch.as_tensor(rng.normal(size=(N * b, N * b)))
+        M = _blockdiag_congruence(0.5 * (X + X.T) + 1.5 * torch.eye(N * b), Wi)     # symmetric, usually indefinite
+        P_, info = psd.project(M, W, Wi)
+        lam = torch.linalg.eigvalsh(_blockdiag_congruence(P_, W))
+        assert float(lam[0]) >= 0.5 * psd.FLOOR and rel(P_, P_.T) < 1e-14
+        Y = torch.as_tensor(rng.normal(size=(N * b, N * b)))
+        T = _blockdiag_congruence(Y @ Y.T / (N * b) + 1e-3 * torch.eye(N * b), Wi)          # an admissible "truth"
+        wn = lambda Z: float(_blockdiag_congruence(Z, W).norm())
+        assert wn(P_ - T) <= wn(M - T) * (1 + 1e-12), trial                             # never further from the truth
+        P2, info2 = psd.project(P_, W, Wi)
+        assert not info2["projected"] and P2 is P_                                       # idempotent, untouched when PD
+        Q = torch.linalg.qr(torch.as_tensor(rng.normal(size=(N, b, b))))[0]             # another square root: O W
+        P3, _ = psd.project(M, Q @ W, Wi @ Q.transpose(1, 2))
+        assert rel(P3, P_) < 1e-10
+        dM = _blockdiag_congruence(torch.as_tensor(rng.normal(size=(N * b, N * b))), Wi)
+        dM = 1e-3 * 0.5 * (dM + dM.T)
+        P4, _ = psd.project(M + dM, W, Wi)
+        assert wn(P4 - P_) <= wn(dM) * (1 + 1e-9)                                        # 1-Lipschitz
+        lam_s = float(rng.uniform(0.5, 3.0))                                             # every length x lam_s
+        S = torch.ones(b) / lam_s ** 0.5
+        S[3:] /= lam_s
+        Sm = torch.diag(S).expand(N, b, b)
+        Ws, Wis = _roots(Sm @ D @ Sm)
+        P5, _ = psd.project(_blockdiag_congruence(M, Sm), Ws, Wis)
+        assert rel(P5, _blockdiag_congruence(P_, Sm)) < 1e-10                            # exactly covariant
+    Z = torch.as_tensor(rng.normal(size=(N * b, N * b)))
+    M = _blockdiag_congruence(Z @ Z.T + torch.eye(N * b), Wi)                            # positive definite: bit for bit
+    assert psd.project(M, W, Wi)[0] is M
+
+
+@each_form
+def test_psd_operator(form):
+    """The operator in every mode, on a dense suspension where the raw sum is NOT positive definite: projected it is,
+    and it stays symmetric, rotation equivariant and independent of particle order."""
+    import psd
+    rng = np.random.default_rng(32)
+    shapes = assign_shapes(form.test_kinds, 9, rng)
+    pos, q = uniform_config(shapes, 0.2, rng)
+    pair = randomise(P.PairModel(form.name, 12.0, 16))                  # NOT damped: a strongly indefinite raw sum
+    op = Operator(pair, randomise(NbodyModel(form.name, 12.0, 12.0, n_bands=4, width=16)), acc=ACC, device="cpu",
+                  self_model=randomise(SelfModel(12.0, n_bands=4, width=16)))
+    N = len(pos)
+    R = torch.as_tensor(quat_to_matrix(q))
+    Q = quat_to_matrix(random_quats(rng, 1)[0])
+    G = torch.kron(torch.eye(N), torch.block_diag(torch.as_tensor(Q), torch.as_tensor(Q)))
+    perm = rng.permutation(N)
+    idx = torch.as_tensor(np.concatenate([6 * i + np.arange(6) for i in perm]))
+    for mode in ("pair", "full"):
+        raw = op.grand_M(pos, q, shapes, mode, psd=False)
+        assert float(psd.spectrum(raw, shapes, R, ACC)[0]) < 0, (mode, "the test needs an indefinite raw sum")
+        M = op.grand_M(pos, q, shapes, mode)
+        assert op.last_psd["projected"] and float(psd.spectrum(M, shapes, R, ACC)[0]) >= 0.5 * psd.FLOOR
+        assert rel(M, M.T) < 1e-13
+        Mr = op.grand_M(pos @ Q.T, matrix_to_quat(Q @ quat_to_matrix(q)), shapes, mode)
+        assert rel(Mr, G @ M @ G.T) < 1e-8, mode                       # rotation of everything
+        Mp = op.grand_M(pos[perm], q[perm], [shapes[i] for i in perm], mode)
+        assert rel(Mp, M[idx][:, idx]) < 1e-9, mode                    # relabelling of the particles
+    M = op.grand_M(pos, q, shapes, "far")                            # the far field alone is positive definite: untouched
+    assert not op.last_psd["projected"] and torch.equal(M, op.grand_M(pos, q, shapes, "far", psd=False))
+
+
+def test_psd_grand():
+    """Stress blocks: velocity-from-force and stresslet-from-strain parts made positive semi-definite, coupling kept."""
+    import psd
+    rng = np.random.default_rng(33)
+    shapes = ["prolateSpheroid", "oblateSpheroid", "prolateSpheroid", "oblateSpheroid"]
+    N = len(shapes)
+    R = torch.as_tensor(quat_to_matrix(random_quats(rng, N)))
+    X = torch.as_tensor(rng.normal(size=(11 * N, 11 * N))) * 0.3
+    G = X + X.T
+    Gp, info = psd.project_grand(G, shapes, R, "medium")
+    Gb, Gpb = G.reshape(N, 11, N, 11), Gp.reshape(N, 11, N, 11)
+    assert info["mobility"]["projected"] and info["stress"]["projected"]
+    assert torch.equal(Gpb[:, :6, :, 6:], Gb[:, :6, :, 6:]) and torch.equal(Gpb[:, 6:, :, :6], Gb[:, 6:, :, :6])
+    W, _ = psd.whitening_stress(shapes, R, "medium")
+    C = psd._congruence(Gpb[:, 6:, :, 6:].reshape(5 * N, 5 * N), W)
+    assert float(torch.linalg.eigvalsh(C)[0]) >= 0.5 * psd.FLOOR
+    assert float(psd.spectrum(Gpb[:, :6, :, :6].reshape(6 * N, 6 * N), shapes, R, "medium")[0]) >= 0.5 * psd.FLOOR
 
 
 def main():

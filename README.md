@@ -73,8 +73,9 @@ cd workspaces/triaxial && python ../../code/tests.py && cd ../..
 SMOKE=1 LOCAL=1 bash code/run.sh 3A
 ```
 
-`tests.py` checks everything that holds by construction, for both forms (19 tests): rotation and reflection
-equivariance, reciprocity, size scaling, continuity, the far field, the periodic sum, the stress model. The smoke run
+`tests.py` checks everything that holds by construction, for both forms (22 tests): rotation and reflection
+equivariance, reciprocity, size scaling, continuity, the far field, the periodic sum, the stress model, and the
+positive-definiteness projection (exact, never further from the truth, untouched when already positive definite). The smoke run
 goes through the whole pipeline on coarse clouds with tiny models, ending in `results_smoke/REPORT.md`. Its numbers
 mean nothing; it only proves the chain runs.
 
@@ -136,13 +137,16 @@ Our headline numbers (% error against MFS on fine clouds; translation / rotation
 
 Stated so that nobody is surprised by them:
 
-- **Positive definiteness is not built in.** The two-body blocks are positive definite pair by pair, and the full
-  operator is positive definite for small or dilute systems, but at volume fraction >= 0.15 with 100 particles almost no configuration gives a
-  positive definite matrix (see `PD_*.md` in each case). Adding pairs in mobility space causes this even with exact
-  pair data. This does not affect the velocity accuracy above, but it rules out Brownian dynamics in dense systems.
+- **Positive definiteness is enforced, not learned.** Adding pair interactions in mobility space is indefinite in
+  dense suspensions even with exact pair blocks, and no operator with percent-level errors can be positive definite
+  there by luck (Weyl's inequality; the truth's softest mode is a few percent of the isolated mobility). So the last
+  step of every operator matrix is `code/psd.py`: the nearest positive semi-definite matrix in the metric of the
+  isolated particles. It cannot move the operator further from the truth, leaves positive definite matrices
+  untouched, and keeps every symmetry; `evaluate.py psd` measures it against MFS on held-out clusters. The files in
+  `reference_results/` were made before this step (raw operator); rerunning the evaluation gives the projected ones.
 - **The many-body model is trained on finite clusters in unbounded fluid.** It must not be used in a periodic box:
-  there it produces unphysical results (particles settling upwards in `reference_results/bulk/`). The far field and
-  the two-body model are fine in a periodic box.
+  there it is inaccurate (in `reference_results/bulk/`, made with the raw operator, particles even settle upwards; the
+  projection rules out that sign, not the inaccuracy). The far field and the two-body model are fine in a periodic box.
 - **Nothing is learned below contact factor 1.05** (no lubrication limit). Simulations stop when a pair gets that close.
 - **There is no truth for periodic boxes**; the periodic numbers are checked only against known sphere results.
 - In `reference_results/experiments/`, the three-oblate run started from an overlapping configuration (fixed in the
@@ -158,7 +162,7 @@ Stated so that nobody is surprised by them:
 | `farfield.py` | the 12-point far field of any two ellipsoids (+ stresslets and strain) |
 | `pair.py` | the two-body model, both forms (spheroid: 12 inputs; triaxial: 22 inputs) |
 | `nbody.py` | the many-body correction of cross blocks and of self blocks |
-| `mobility.py` | the assembled operator: far field, + two-body, + many-body |
+| `mobility.py`, `psd.py` | the assembled operator: far field, + two-body, + many-body; made positive definite |
 | `makedata.py`, `train.py` | data generation and training (resumable) |
 | `evaluate.py`, `report.py` | every test and the combined report |
 | `periodic.py`, `stress.py` | periodic box, stress model |

@@ -10,6 +10,9 @@ stress model) are short-ranged corrections to the far field, so they are added f
 
     M = periodic_M(op, pos, quats, shapes, L, mode)            (6N, 6N)   [11N with stress=...: + strain and stresslet]
 
+Every matrix is made positive (semi-)definite as in mobility.py (psd.py): the mobility part and, with stress, the
+stresslet-from-strain part too (which keeps every viscosity contribution positive); not when the operator has psd=False.
+
 Checks (tests.py): the settling speed of a cubic array of point-like spheres, 1 - 2.837297 a / L (Hasimoto); the
 result does not depend on the splitting parameter; a huge box gives the free-space matrix.
 There is NO truth for periodic boxes here (MFS is free-space): the periodic far field is exact to the order of the
@@ -38,6 +41,7 @@ import numpy as np
 import torch
 
 import pair as P
+import psd as PSD
 from farfield import _lab_operator, body_operator, body_operator11, far_blocks11, lab_operator11, rot11
 from geometry import axes_of, clearance_torch, contact_factor_torch, quat_to_matrix, random_quats, volume
 from truth import iso_mobility
@@ -167,6 +171,8 @@ def periodic_M(op, pos, quats, shapes, L: float, mode: str = "full", stress=None
     smodel = stress.double().to(op.dev).eval() if isinstance(stress, torch.nn.Module) else None
     learned = mode != "far"
     if not learned and smodel is None:
+        if op.psd:
+            M, op.last_psd = (PSD.project_mobility if b == 6 else PSD.project_grand)(M, shapes, R, op.acc, op.psd_floor)
         return M
     lmax, amax = max(float(axes_of(s).min()) for s in shapes), max(float(axes_of(s).max()) for s in shapes)
     reach = max(_pair_reach(op.pair, lmax, amax) if learned else 0.0, _pair_reach(smodel, lmax, amax) if smodel is not None else 0.0)
@@ -227,7 +233,10 @@ def periodic_M(op, pos, quats, shapes, L: float, mode: str = "full", stress=None
     C = C.reshape(N, N, b, b)
     ar = torch.arange(N, device=op.dev)
     C[ar, ar] += selfsum
-    return M + C.permute(0, 2, 1, 3).reshape(b * N, b * N)
+    M = M + C.permute(0, 2, 1, 3).reshape(b * N, b * N)
+    if op.psd:                                                  # positive (semi-)definite, as every operator output
+        M, op.last_psd = (PSD.project_mobility if b == 6 else PSD.project_grand)(M, shapes, R, op.acc, op.psd_floor)
+    return M
 
 
 # ----------------------------------------------------------------------------------------------- configurations

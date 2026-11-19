@@ -31,10 +31,17 @@ dynamics    a ring of 5 (or a pair) falling under gravity, RK4, the SAME integra
 ceiling     the operator with every near cross block replaced by the EXACT MFS block (a perfect many-body correction),
             and then also every self block.  What is left is the pairs beyond the cutoff: the floor of any near-field
             model.
-pd          positive definiteness over MANY random suspensions (no MFS needed), the particles carrying the weakest mode
-            of the worst one, and the two-body operator on stored pairs alone against MFS.
-check       symmetry of the grand mobility matrix (exact by construction), its smallest eigenvalue (positive
-            definiteness is NOT built in: verified here against MFS), equivariance under a rotation of everything.
+pd          positive definiteness of the RAW operator (before psd.py's projection) over MANY random suspensions (no MFS
+            needed), the particles carrying the weakest mode of the worst one, the two-body operator on stored pairs
+            alone against MFS, and how much the projection changes the operator.
+psd         the projection against the truth, on the held-out clusters (seed % 10 == 0: never trained on) of the case:
+            the truth's smallest eigenvalue, the raw operator's, Weyl's bound |M - T|_2, and every error before and after
+            the projection (it can only decrease in the metric of the isolated particles).
+check       symmetry of the grand mobility matrix (exact by construction), its smallest eigenvalue before and after the
+            projection against MFS's, equivariance under a rotation of everything.
+
+Every operator here is the projected one (positive definite, psd.py) unless a table says "raw"; --raw turns the
+projection off everywhere.
 """
 from __future__ import annotations
 
@@ -56,6 +63,7 @@ from mobility import Operator
 from nbody import load_nbody, load_self
 from train import block_scores, pair_targets, rel, score_pair, unit_loads
 from truth import Truth, cloud_error, have_cloud
+import psd as PSD
 
 SIX_PI = 6.0 * np.pi
 BANDS = [(1.0, 1.1), (1.1, 1.25), (1.25, 1.5), (1.5, 2.0), (2.0, 4.0), (4.0, 1e9)]
@@ -67,7 +75,7 @@ def operator(args) -> tuple:
     nb = load_nbody(args.nbody) if getattr(args, "nbody", None) else None
     ns = load_self(args.nself) if getattr(args, "nself", None) else None
     modes = ["far"] + (["pair"] if pair is not None else []) + (["full"] if nb is not None else [])
-    return Operator(pair, nb, acc=args.acc, device=args.device, self_model=ns), modes
+    return Operator(pair, nb, acc=args.acc, device=args.device, self_model=ns, psd=not getattr(args, "raw", False)), modes
 
 
 def write(path: Path, lines: list, obj) -> None:
@@ -97,6 +105,15 @@ def cloud_table(kinds, accs) -> tuple:
             cells.append(f"{e['nodes']} / {e['sources']}; {e['trans_pct']:.4f} / {e['rot_pct']:.4f}" if e else "no cloud")
         lines.append(f"| {s} | {' : '.join(f'{x:g}' for x in axes_of(s))} | " + " | ".join(cells) + " |")
     return lines, out
+
+
+def psd_condition(args) -> str:
+    if getattr(args, "raw", False):
+        return ("- **Positive definiteness**: NOT enforced (--raw): the operators are the raw sums, symmetric but not "
+                "necessarily positive definite.")
+    return ("- **Positive definiteness**: every operator matrix is projected onto the positive semi-definite matrices in the "
+            f"metric of the isolated particles (psd.py: eigenvalues relative to the isolated mobilities >= {PSD.FLOOR:g}); "
+            "a matrix that already is positive definite is used as it is.")
 
 
 def model_conditions(args) -> tuple:
@@ -140,6 +157,8 @@ def model_conditions(args) -> tuple:
                      f"{m.n_pseudo} pseudo tensors, width {m.width}; neighbours within {m.neighbor_cutoff:g} particle lengths.  "
                      + (f"Trained on {rm.get('n_rows', 0):,} particles of clusters `{rm.get('clusters', '?')}`; self blocks against "
                         f"MFS on validation: pairwise sum {e.get('pairwise_sum', 0):.3f} % -> {e.get('with_self_model', 0):.3f} %." if rm else ""))
+    lines.append(psd_condition(args))
+    out["psd"] = {"projected": not getattr(args, "raw", False), "floor": PSD.FLOOR}
     return lines, out
 
 
@@ -513,7 +532,7 @@ def eval_ceiling(args) -> None:
                 near &= ~torch.eye(N, dtype=torch.bool, device=op.dev)
                 t, s_ = torch.nonzero(near, as_tuple=True)
                 ar = torch.arange(N, device=op.dev)
-                Ms = {m: op.grand_M(pos, q, shapes, m) for m in modes}
+                Ms = {m: op.grand_M(pos, q, shapes, m, psd=False) for m in modes}       # raw: what the blocks alone give
                 Mc = Ms["pair"].clone().reshape(N, 6, N, 6)
                 Mc[t, :, s_, :] = Mt.reshape(N, 6, N, 6)[t, :, s_, :]
                 Md = Mc.clone()
@@ -550,7 +569,8 @@ def eval_ceiling(args) -> None:
         f"- **Configurations**: N in {args.N}, shapes {', '.join(args.kinds)} in equal numbers, uniform in a cube at phi in "
         f"{args.phi}, random orientations, contact factor >= {1 + MARGIN:g}; {args.seeds} per (phi, N); a configuration "
         "whose MFS solve does not converge is skipped (n counts those kept).",
-        "- **Load and metric**: a random unit force and torque on every particle (x 6 pi); PRMSE as in the suspension test."] + tlines
+        "- **Load and metric**: a random unit force and torque on every particle (x 6 pi); PRMSE as in the suspension test.",
+        "- **Matrices**: RAW sums (no positive-definiteness projection), so that only the blocks are compared."] + tlines
     write(Path(args.results) / f"CEILING_{args.name or '_'.join(args.kinds)}", lines + cond,
           {"cells": out, "conditions": {"models": mcond, "truth": tcond, "N": args.N, "phi": args.phi, "seeds": args.seeds}})
 
@@ -567,18 +587,22 @@ def eval_check(args) -> None:
     q_rot = matrix_to_quat(Qr @ quat_to_matrix(q))
     Mt = torch.as_tensor(Truth(args.kinds, args.acc, args.device).mobility(pos, q, shapes))
     lines = [f"# Structural checks, {N} particles of {', '.join(args.kinds)} at phi {args.phi[0]:g}", "",
-             "| matrix | asymmetry | smallest eigenvalue / MFS's | rotation equivariance error | against MFS, % |",
+             "| matrix | asymmetry | smallest eigenvalue / MFS's, raw -> projected | rotation equivariance error | against MFS, %, raw -> projected |",
              "|---|---|---|---|---|"]
     lam_t = float(torch.linalg.eigvalsh(0.5 * (Mt + Mt.T)).min())
     out = {"mfs_min_eig": lam_t, "mfs_asymmetry": float((Mt - Mt.T).norm() / Mt.norm())}
     label = {"far": "far field", "pair": "+ two-body", "full": "+ many-body"}
     for mode in modes:
+        Mraw = op.grand_M(pos, q, shapes, mode, psd=False)
         M = op.grand_M(pos, q, shapes, mode)
         Mr = op.grand_M(pos @ Qr.T, q_rot, shapes, mode)
         e = {"asymmetry": float((M - M.T).norm() / M.norm()), "min_eig": float(torch.linalg.eigvalsh(0.5 * (M + M.T)).min()),
-             "rotation": float((Mr - G @ M @ G.T).norm() / M.norm()), "vs_mfs_pct": rel(M.cpu(), 0.5 * (Mt + Mt.T))}
+             "min_eig_raw": float(torch.linalg.eigvalsh(0.5 * (Mraw + Mraw.T)).min()),
+             "rotation": float((Mr - G @ M @ G.T).norm() / M.norm()), "vs_mfs_pct": rel(M.cpu(), 0.5 * (Mt + Mt.T)),
+             "vs_mfs_pct_raw": rel(Mraw.cpu(), 0.5 * (Mt + Mt.T))}
         out[mode] = e
-        lines.append(f"| {label[mode]} | {e['asymmetry']:.1e} | {e['min_eig'] / lam_t:.4f} | {e['rotation']:.1e} | {e['vs_mfs_pct']:.2f} |")
+        lines.append(f"| {label[mode]} | {e['asymmetry']:.1e} | {e['min_eig_raw'] / lam_t:.4f} -> {e['min_eig'] / lam_t:.4f} | "
+                     f"{e['rotation']:.1e} | {e['vs_mfs_pct_raw']:.2f} -> {e['vs_mfs_pct']:.2f} |")
     lines.append(f"| MFS {args.acc} (the truth) | {out['mfs_asymmetry']:.1e} | 1 | | 0 |")
     ref = args.ref_acc if args.ref_acc and have_cloud(args.kinds, args.ref_acc) else None
     if ref:
@@ -592,7 +616,8 @@ def eval_check(args) -> None:
         except Exception as e:                                      # noqa: BLE001
             lines.append(f"| MFS {ref} | failed: {str(e)[:60]} | | | |")
     lines += ["", f"MFS smallest eigenvalue {lam_t:.4e} (positive).  A ratio > 0 means that matrix is positive definite on "
-              "this configuration; the operators are symmetric by construction, positive definiteness is only verified."]
+              "this configuration.  The operators are symmetric by construction; 'raw' is the sum of the blocks, the operator "
+              "itself is projected onto the positive semi-definite matrices (psd.py), which is positive definite always."]
     mlines, mcond = model_conditions(args)
     tlines, tcond = truth_conditions(args, args.kinds, "the whole mobility matrix of the configuration (direct solve when "
                                      f"small, else GMRES to {TOL_V:g}).")
@@ -608,10 +633,13 @@ def eval_check(args) -> None:
 
 # ----------------------------------------------------------------------------------------------- positive definiteness
 def eval_pd(args) -> None:
-    """Is the operator positive definite, how often, and if not: which particles do it?  No MFS solve is needed for the
-    suspensions (the sign of the smallest eigenvalue is a property of the operator alone), so many configurations are
-    tested.  The smallest eigenvalue is given relative to the far-field operator's on the same configuration."""
+    """Is the RAW operator positive definite, how often, and if not: which particles do it?  No MFS solve is needed for
+    the suspensions (the sign of the smallest eigenvalue is a property of the operator alone), so many configurations
+    are tested.  The smallest eigenvalue is given relative to the far-field operator's on the same configuration.  And
+    how much psd.py's projection changes each operator (relative size of the change, in the metric of the isolated
+    particles; 0 where the raw matrix already is positive definite)."""
     op, modes = operator(args)
+    change = {}
     label = {"far": "far field", "pair": "+ two-body", "full": "+ many-body"}
     stats, worst = {}, {}
     for phi in args.phi:
@@ -625,18 +653,23 @@ def eval_pd(args) -> None:
                 pos, q = made
                 lam_far = None
                 for mode in modes:
-                    w, V = torch.linalg.eigh(op.grand_M(pos, q, shapes, mode))
+                    raw = op.grand_M(pos, q, shapes, mode, psd=False)
+                    w, V = torch.linalg.eigh(raw)
+                    _, info = PSD.project_mobility(raw, shapes, op.geometry(pos, q, shapes)[1], op.acc, op.psd_floor)
+                    change.setdefault((phi, N, mode), []).append(info["changed"])
                     lam_far = float(w[0]) if mode == "far" else lam_far
                     r = float(w[0]) / lam_far
                     stats.setdefault((phi, N, mode), []).append(r)
                     if r < worst.get(mode, (np.inf,))[0]:
                         worst[mode] = (r, phi, N, seed, pos, q, shapes, V[:, 0].cpu().numpy())
             print(f"phi {phi:g} N {N}: " + "  ".join(f"{m} min {min(stats[(phi, N, m)]):.3f}" for m in modes if (phi, N, m) in stats), flush=True)
-    lines = [f"# Positive definiteness of the operator, {', '.join(args.kinds)}", "",
-             "Per (phi, N): how many random suspensions give a positive definite grand mobility matrix, and its smallest "
-             "eigenvalue relative to the far-field operator's on the same configuration (smallest / median over the "
-             "configurations).  A negative number = not positive definite.", "",
-             "| phi | N | n | " + " | ".join(f"{label[m]}: positive definite; smallest eigenvalue ratio min / median" for m in modes) + " |",
+    lines = [f"# Positive definiteness of the raw operator, {', '.join(args.kinds)}", "",
+             "Per (phi, N): how many random suspensions give a positive definite RAW grand mobility matrix (the sum of the "
+             "blocks, before psd.py's projection), its smallest eigenvalue relative to the far-field operator's on the same "
+             "configuration (smallest / median over the configurations; negative = not positive definite), and how much "
+             "the projection changes the matrix (largest relative change, % in the metric of the isolated particles).  "
+             "The operator itself is the projected matrix: positive definite in every configuration.", "",
+             "| phi | N | n | " + " | ".join(f"{label[m]}: raw positive definite; smallest eigenvalue ratio min / median; largest change by the projection" for m in modes) + " |",
              "|---|---|---|" + "---|" * len(modes)]
     out = {"cells": {}}
     for phi in args.phi:
@@ -646,8 +679,10 @@ def eval_pd(args) -> None:
                 v = stats.get((phi, N, m))
                 if not v:
                     continue
-                out["cells"][f"{phi:g}|{N}|{m}"] = {"n": len(v), "pd": int(sum(x > 0 for x in v)), "min": min(v), "median": float(np.median(v))}
-                cells.append(f"{sum(x > 0 for x in v)} of {len(v)}; {min(v):.3f} / {np.median(v):.3f}")
+                ch = change[(phi, N, m)]
+                out["cells"][f"{phi:g}|{N}|{m}"] = {"n": len(v), "pd": int(sum(x > 0 for x in v)), "min": min(v), "median": float(np.median(v)),
+                                                    "change_max_pct": 100 * max(ch), "change_median_pct": 100 * float(np.median(ch))}
+                cells.append(f"{sum(x > 0 for x in v)} of {len(v)}; {min(v):.3f} / {np.median(v):.3f}; {100 * max(ch):.2f} %")
             if cells:
                 lines.append(f"| {phi:g} | {N} | {len(stats[(phi, N, modes[0])])} | " + " | ".join(cells) + " |")
     # where the weakest mode of each learned operator lives
@@ -665,10 +700,10 @@ def eval_pd(args) -> None:
         i, j = np.argsort(share)[::-1][:2]
         two = [shapes[i], shapes[j]]
         p2, q2 = pos[[i, j]], q[[i, j]]
-        e_far = float(torch.linalg.eigvalsh(op.grand_M(p2, q2, two, "far"))[0])
-        e_pair = float(torch.linalg.eigvalsh(op.grand_M(p2, q2, two, "pair"))[0])
-        M = op.grand_M(pos, q, shapes, mode).reshape(N, 6, N, 6)
-        Mf = op.grand_M(pos, q, shapes, "far").reshape(N, 6, N, 6)
+        e_far = float(torch.linalg.eigvalsh(op.grand_M(p2, q2, two, "far", psd=False))[0])
+        e_pair = float(torch.linalg.eigvalsh(op.grand_M(p2, q2, two, "pair", psd=False))[0])
+        M = op.grand_M(pos, q, shapes, mode, psd=False).reshape(N, 6, N, 6)
+        Mf = op.grand_M(pos, q, shapes, "far", psd=False).reshape(N, 6, N, 6)
         selfr = [float(torch.linalg.eigvalsh(M[k, :, k, :])[0] / torch.linalg.eigvalsh(Mf[k, :, k, :])[0]) for k in (i, j)]
         X, R, desc, _, _ = op.geometry(p2, q2, two)
         dist = float((X[1] - X[0]).norm() / P.pair_length(P.take(desc, [0]), P.take(desc, [1])))
@@ -697,7 +732,7 @@ def eval_pd(args) -> None:
             for k in range(min(args.max_pairs, len(z["positions"]))):
                 pos, q = z["positions"][k], z["quats"][k]
                 Mt = 0.5 * (z["M"][k] + z["M"][k].T)
-                ratios.append(float(torch.linalg.eigvalsh(op.grand_M(pos, q, sh, "pair"))[0]) / float(np.linalg.eigvalsh(Mt)[0]))
+                ratios.append(float(torch.linalg.eigvalsh(op.grand_M(pos, q, sh, "pair", psd=False))[0]) / float(np.linalg.eigvalsh(Mt)[0]))
                 info.append((min_contact(sh, pos, q), float(np.linalg.norm(pos[1] - pos[0]))))
             w = int(np.argmin(ratios))
             out.setdefault("pairs", {})[tag] = {"n": len(ratios), "pd": int(sum(x > 0 for x in ratios)), "min": min(ratios),
@@ -709,8 +744,109 @@ def eval_pd(args) -> None:
         f"- **Configurations**: N in {args.N}, shapes {', '.join(args.kinds)} in equal numbers, uniform in a cube at phi in "
         f"{args.phi}, random orientations, contact factor >= {1 + MARGIN:g}; {args.seeds} per (phi, N).  Isolated self "
         f"blocks from the `{args.acc}` clouds.",
-        "- **Eigenvalues**: of the full (6N, 6N) operator matrix (symmetric by construction), dense, float64."]
+        "- **Eigenvalues**: of the full (6N, 6N) RAW operator matrix (symmetric by construction), dense, float64."]
     write(Path(args.results) / f"PD_{args.name or '_'.join(args.kinds)}", lines + cond, out)
+
+
+def eval_psd(args) -> None:
+    """The projection against the truth, on the held-out clusters of the case (seed % 10 == 0, never trained on):
+    MFS matrices of whole clusters of 8-96 particles that are already on disk (makedata.py clusters), so nothing is
+    solved here.  Per configuration and operator mode: smallest eigenvalue relative to the isolated particles (truth,
+    raw, projected), Weyl's bound |M - T|_2 in the same metric (if it exceeds the truth's smallest eigenvalue, nothing
+    guarantees the raw matrix is positive definite), and the errors before and after the projection: in the metric of
+    the isolated particles (where it can only decrease), and in velocity (random unit loads, gravity)."""
+    op, modes = operator(args)
+    files = sorted(glob.glob(f"{args.data}/clusters/{args.clusters}_{args.acc}/item*_part*.npz"))
+    assert files, f"no clusters {args.data}/clusters/{args.clusters}_{args.acc}"
+    label = {"far": "far field", "pair": "+ two-body", "full": "+ many-body"}
+    recs, n_cfg = [], 0
+    for f in files:
+        z = np.load(f)
+        meta = json.loads(str(z["meta"]))
+        for k in range(len(z["seed"])):
+            if int(z["seed"][k]) % 10 != 0 or (args.max_configs and n_cfg >= args.max_configs):
+                continue
+            n_cfg += 1
+            pos, q, shapes = z["positions"][k], z["quats"][k], [str(x) for x in z["shapes"][k]]
+            N = len(pos)
+            R = op.geometry(pos, q, shapes)[1]
+            T = torch.as_tensor(z["M"][k], device=op.dev)
+            T = 0.5 * (T + T.T)
+            W, Wi = PSD.whitening(shapes, R, op.acc)
+            wn = lambda X: float(PSD._congruence(X, W).norm())
+            lam_t = float(PSD.spectrum(T, shapes, R, op.acc)[0])
+            rng = np.random.default_rng(int(z["seed"][k]))
+            F = torch.as_tensor(rng.normal(size=(6 * N, 16)), device=op.dev)
+            g = torch.zeros(N, 6, dtype=torch.float64, device=op.dev)
+            g[:, 2] = -1.0
+            g = g.reshape(-1, 1)
+            vel = lambda M, X: float(100 * ((M - T) @ X).norm() / (T @ X).norm())
+            bucket = f"{meta['family']} " + ", ".join(f"{a} {b:g}" for a, b in meta["params"].items()) + f", N {N}"
+            for mode in modes:
+                raw = op.grand_M(pos, q, shapes, mode, psd=False)
+                prj, info = PSD.project(raw, W, Wi, op.psd_floor)
+                E = PSD._congruence(raw - T, W)
+                recs.append({"bucket": bucket, "family": meta["family"], "N": N, "mode": mode, "lam_truth": lam_t,
+                             "lam_raw": float(PSD.spectrum(raw, shapes, R, op.acc)[0]),
+                             "lam_proj": float(PSD.spectrum(prj, shapes, R, op.acc)[0]),
+                             "weyl": float(torch.linalg.matrix_norm(0.5 * (E + E.T), 2)),
+                             "w_raw": 100 * wn(raw - T) / wn(T), "w_proj": 100 * wn(prj - T) / wn(T),
+                             "v_raw": vel(raw, F), "v_proj": vel(prj, F), "g_raw": vel(raw, g), "g_proj": vel(prj, g),
+                             "changed": 100 * info["changed"]})
+            print(f"{bucket}: truth {lam_t:.4f}  " + "  ".join(f"{r['mode']} raw {r['lam_raw']:+.4f} err {r['v_raw']:.2f}->{r['v_proj']:.2f}"
+                                                             for r in recs[-len(modes):]), flush=True)
+    assert recs, "no held-out clusters"
+    lam_ts = [r["lam_truth"] for r in recs if r["mode"] == modes[0]]
+    lines = [f"# Positive definiteness against the truth, held-out clusters `{args.clusters}` ({', '.join(sorted({r['bucket'].split(',')[0] for r in recs}))})", "",
+             f"{n_cfg} clusters never used in training (seed % 10 == 0), their MFS matrices from disk.  Eigenvalues are relative to "
+             "the isolated particles (1 = no interaction; the truth's smallest is the softest collective mode).  Weyl: "
+             "|lam_min(M) - lam_min(T)| <= |M - T|_2, so where |M - T|_2 exceeds the truth's smallest eigenvalue, a raw "
+             "operator with that error is positive definite only by luck.  Errors (%): W = in the metric of the isolated "
+             "particles (the projection can only lower it); velocity = PRMSE of all six components under 16 random unit "
+             "loads; gravity = translation under equal forces.", "",
+             f"The truth: smallest eigenvalue min {min(lam_ts):.4f}, median {np.median(lam_ts):.4f} (all >= the floor "
+             f"{op.psd_floor:g}: {'yes' if min(lam_ts) >= op.psd_floor else '**NO**'}, so the no-loss guarantee holds).", "",
+             "## All held-out clusters", "",
+             "| operator | n | raw positive definite | raw smallest eigenvalue: min / median | Weyl bound |M - T|_2: median / max | "
+             "error W: raw -> projected | velocity: raw -> projected | gravity: raw -> projected | change by the projection: "
+             "median / max | W error larger after the projection |", "|---|---|---|---|---|---|---|---|---|---|"]
+    out = {"modes": {}, "buckets": {}, "truth_lam_min": min(lam_ts), "truth_lam_median": float(np.median(lam_ts)), "n": n_cfg}
+    mean = lambda rs, k: float(np.mean([r[k] for r in rs]))
+    for mode in modes:
+        rs = [r for r in recs if r["mode"] == mode]
+        o = {"n": len(rs), "pd_raw": sum(r["lam_raw"] > 0 for r in rs), "lam_raw_min": min(r["lam_raw"] for r in rs),
+             "lam_raw_median": float(np.median([r["lam_raw"] for r in rs])), "lam_proj_min": min(r["lam_proj"] for r in rs),
+             "weyl_median": float(np.median([r["weyl"] for r in rs])), "weyl_max": max(r["weyl"] for r in rs),
+             "worse_w": sum(r["w_proj"] > r["w_raw"] * (1 + 1e-9) for r in rs),
+             "changed_median": float(np.median([r["changed"] for r in rs])), "changed_max": max(r["changed"] for r in rs)}
+        o.update({k: mean(rs, k) for k in ("w_raw", "w_proj", "v_raw", "v_proj", "g_raw", "g_proj")})
+        out["modes"][mode] = o
+        lines.append(f"| {label[mode]} | {o['n']} | {o['pd_raw']} of {o['n']} | {o['lam_raw_min']:+.4f} / {o['lam_raw_median']:+.4f} | "
+                     f"{o['weyl_median']:.4f} / {o['weyl_max']:.4f} | {o['w_raw']:.3f} -> {o['w_proj']:.3f} | {o['v_raw']:.3f} -> "
+                     f"{o['v_proj']:.3f} | {o['g_raw']:.3f} -> {o['g_proj']:.3f} | {o['changed_median']:.3f} / {o['changed_max']:.3f} | {o['worse_w']} |")
+    last = modes[-1]
+    lines += ["", f"## By kind of cluster ({label[last]})", "",
+              "| clusters | n | truth smallest eigenvalue: min | raw smallest: min | Weyl |M - T|_2: median | raw positive definite | "
+              "velocity error: raw -> projected | W error: raw -> projected |", "|---|---|---|---|---|---|---|---|"]
+    for b in sorted({r["bucket"] for r in recs}, key=lambda x: (x.split()[0], recs[[r["bucket"] for r in recs].index(x)]["N"], x)):
+        rs = [r for r in recs if r["bucket"] == b and r["mode"] == last]
+        o = {"n": len(rs), "lam_truth_min": min(r["lam_truth"] for r in rs), "lam_raw_min": min(r["lam_raw"] for r in rs),
+             "weyl_median": float(np.median([r["weyl"] for r in rs])), "pd_raw": sum(r["lam_raw"] > 0 for r in rs),
+             **{k: mean(rs, k) for k in ("v_raw", "v_proj", "w_raw", "w_proj")}}
+        out["buckets"][b] = o
+        lines.append(f"| {b} | {o['n']} | {o['lam_truth_min']:.4f} | {o['lam_raw_min']:+.4f} | {o['weyl_median']:.4f} | {o['pd_raw']} of {o['n']} | "
+                     f"{o['v_raw']:.3f} -> {o['v_proj']:.3f} | {o['w_raw']:.3f} -> {o['w_proj']:.3f} |")
+    mlines, mcond = model_conditions(args)
+    tlines, tcond = truth_conditions(args, args.kinds,
+                                     "the whole mobility matrix of each held-out cluster as stored by makedata.py clusters (direct "
+                                     "solve or GMRES), symmetrised.")
+    cond = ["", "## Conditions", ""] + mlines + [
+        f"- **Clusters**: `{args.data}/clusters/{args.clusters}_{args.acc}`, every configuration with seed % 10 == 0 (the "
+        "validation split: never used to train the many-body or self models)" + (f", at most {args.max_configs}" if args.max_configs else "") + ".",
+        f"- **Projection**: psd.py, eigenvalues of W M W^T clipped at {op.psd_floor:g}, W = blockdiag(M_iso)^(-1/2) from the "
+        f"`{op.acc}` clouds; raw = the sum of the blocks.  'change' = |P(M) - M|_W / |M|_W (%)."] + tlines
+    write(Path(args.results) / f"PSD_{args.name or args.clusters}", lines + cond,
+          dict(out, conditions={"models": mcond, "truth": tcond, "clusters": args.clusters}))
 
 
 def main():
@@ -726,6 +862,7 @@ def main():
     common.add_argument("--results", default="results")
     common.add_argument("--name", default=None)
     common.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
+    common.add_argument("--raw", action="store_true", help="do not project the operator onto positive semi-definite matrices")
     a = sub.add_parser("clouds", parents=[common])
     a.add_argument("--kinds", nargs="+", required=True)
     a = sub.add_parser("pair", parents=[common])
@@ -748,6 +885,10 @@ def main():
     a.add_argument("--seeds", type=int, default=20)
     a.add_argument("--sets", nargs="*", default=[], help="pair test sets: the operator on two particles alone, against MFS")
     a.add_argument("--max-pairs", type=int, default=400)
+    a = sub.add_parser("psd", parents=[common])
+    a.add_argument("--clusters", required=True, help="cluster tag of makedata.py clusters (the case's name)")
+    a.add_argument("--kinds", nargs="+", required=True)
+    a.add_argument("--max-configs", type=int, default=None)
     a = sub.add_parser("dynamics", parents=[common])
     a.add_argument("--kinds", nargs="+", required=True)
     a.add_argument("--case", choices=["ring", "pair"], default="ring")
@@ -757,7 +898,7 @@ def main():
     a.add_argument("--steps", type=int, default=600)
     args = ap.parse_args()
     {"clouds": eval_clouds, "pair": eval_pair, "suspension": eval_suspension, "dynamics": eval_dynamics, "check": eval_check, "pd": eval_pd,
-     "ceiling": eval_ceiling}[args.cmd](args)
+     "ceiling": eval_ceiling, "psd": eval_psd}[args.cmd](args)
 
 
 if __name__ == "__main__":

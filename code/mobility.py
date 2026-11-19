@@ -15,7 +15,12 @@ mode "far"   every pair by the far field, isolated self blocks: the ellipsoid an
      "full"  + the many-body correction f_nb of the cross blocks (needs the nbody model) and, when a self model is
              given, of the self blocks (nbody.py SelfModel: what keeps the operator positive definite)
 
-M is symmetric by construction in every mode (reciprocal far field, swap-averaged networks, symmetrised self blocks).
+M is symmetric by construction in every mode (reciprocal far field, swap-averaged networks, symmetrised self blocks),
+and positive definite in every mode: the last step is psd.py's projection onto positive semi-definite matrices in the
+metric of the isolated particles (eigenvalues relative to them >= psd.FLOOR).  It leaves a matrix that already is
+positive definite untouched, never moves the operator further from the (positive definite) truth, and keeps every
+symmetry; `Operator(..., psd=False)` or `grand_M(..., psd=False)` gives the raw sum (diagnostics, the ceiling test).
+`last_psd` holds what the projection did to the last matrix (smallest eigenvalue before, relative size of the change).
 `two_body` is the one code path for the operator AND for the labels of f_nb (makedata.py), and `neighbours`
 (nbody.py) the one neighbour selection, so the many-body model is always applied to what it was trained on.
 Dense = O(N^2) pairs and a (6N)^2 matrix: accuracy studies up to a few thousand particles.
@@ -28,6 +33,7 @@ import torch
 import pair as P
 from farfield import far_blocks
 from geometry import clearance_torch, quat_to_matrix
+import psd as PSD
 from nbody import neighbours
 from truth import iso_mobility
 
@@ -36,7 +42,8 @@ MODES = ("far", "pair", "full")
 
 class Operator:
     def __init__(self, pair_model=None, nbody_model=None, acc: str = "fine", device: str | None = None,
-                 pair_chunk: int = 20000, nb_chunk: int = 2048, self_model=None):
+                 pair_chunk: int = 20000, nb_chunk: int = 2048, self_model=None, psd: bool = True,
+                 psd_floor: float = PSD.FLOOR):
         self.dev = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
         self.pair = pair_model.double().to(self.dev).eval() if pair_model is not None else None
         self.nbody = nbody_model.double().to(self.dev).eval() if nbody_model is not None else None
@@ -46,6 +53,7 @@ class Operator:
             assert self.nbody.form is self.pair.form, "the pair and many-body models must be of the same form"
         self.nself = self_model.double().to(self.dev).eval() if self_model is not None else None
         self.acc, self.pair_chunk, self.nb_chunk = acc, int(pair_chunk), int(nb_chunk)
+        self.psd, self.psd_floor, self.last_psd = bool(psd), float(psd_floor), None
         self._iso: dict = {}
 
     # ------------------------------------------------------------------------------------------- pieces
@@ -134,7 +142,7 @@ class Operator:
 
     # ------------------------------------------------------------------------------------------- the operator
     @torch.no_grad()
-    def grand_M(self, pos, quats, shapes, mode: str = "full") -> torch.Tensor:
+    def grand_M(self, pos, quats, shapes, mode: str = "full", psd: bool | None = None) -> torch.Tensor:
         assert mode in MODES, mode
         assert mode == "far" or self.pair is not None, f"mode {mode} needs a pair model"
         assert mode != "full" or self.nbody is not None, "mode full needs a many-body model"
@@ -161,10 +169,13 @@ class Operator:
             selfsum = selfsum + self.many_self(X, desc)
         ar = torch.arange(N, device=self.dev)
         M[ar, :, ar, :] = selfsum
-        return M.reshape(6 * N, 6 * N)
+        M = M.reshape(6 * N, 6 * N)
+        if self.psd if psd is None else psd:
+            M, self.last_psd = PSD.project_mobility(M, list(shapes), R, self.acc, self.psd_floor)
+        return M
 
     @torch.no_grad()
-    def apply(self, pos, quats, shapes, F, mode: str = "full") -> np.ndarray:
+    def apply(self, pos, quats, shapes, F, mode: str = "full", psd: bool | None = None) -> np.ndarray:
         F = np.asarray(F, dtype=np.float64)
         Fm = torch.as_tensor(F, device=self.dev).reshape(6 * len(pos), -1)
-        return (self.grand_M(pos, quats, shapes, mode) @ Fm).cpu().numpy().reshape(F.shape)
+        return (self.grand_M(pos, quats, shapes, mode, psd) @ Fm).cpu().numpy().reshape(F.shape)

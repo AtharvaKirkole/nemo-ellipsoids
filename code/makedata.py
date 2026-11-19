@@ -217,7 +217,7 @@ def iter_clusters(tag: str, acc: str = "fine", root: str = OUT):
 def build_nbody_rows(args) -> None:
     from mobility import Operator
     from nbody import neighbours, to6
-    op = Operator(P.load_pair(args.pair_model), acc=args.acc, device=args.device)
+    op = Operator(P.load_pair(args.pair_model), acc=args.acc, device=args.device, psd=False)   # labels: the RAW sum
     rc = op.pair.form.r_cut                                 # f_nb's ranges are distances (pair lengths) for either kind of cut
     pc, nc = args.pair_cutoff or rc, args.neighbor_cutoff or rc
     if op.pair.cut == "distance":
@@ -271,7 +271,7 @@ def build_self_rows(args) -> None:
     R = M_tt(MFS) - [M_iso + sum of the pair model's self corrections] (x 6 pi), and its neighbourhood."""
     from mobility import Operator
     from nbody import neighbours, to6
-    op = Operator(P.load_pair(args.pair_model), acc=args.acc, device=args.device)
+    op = Operator(P.load_pair(args.pair_model), acc=args.acc, device=args.device, psd=False)   # labels: the RAW sum
     nc = args.neighbor_cutoff or op.pair.form.r_cut
     parts, cfgs, t0 = [], [], time.time()
     for pos, q, shapes, M, meta in iter_clusters(args.clusters, args.acc, args.out):

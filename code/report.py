@@ -88,11 +88,39 @@ def full_body_row(case: str) -> str | None:
     op = ck.get("full") or ck.get("pair") or {}
     chk = f"{op['vs_mfs_pct']:.2f}" if op else "not run"
     chk_m = f"{ck['mfs']['vs_mfs_pct']:.3f}" if ck.get("mfs") else "not measured"
-    pd = ("yes" if op["min_eig"] > 0 else "**NO**") if op else "not run"
+    ps = load(RES / case / f"PSD_{name}.json") or {}
+    pm = (ps.get("modes") or {})
+    pm = pm.get("full") or pm.get("pair") or {}
+    if pm:
+        pd = (f"raw {pm['pd_raw']} of {pm['n']}; operator always (velocity error {pm['v_raw']:.2f} -> {pm['v_proj']:.2f})")
+    elif op:
+        pd = (f"raw {'yes' if op.get('min_eig_raw', op['min_eig']) > 0 else 'no'}; operator {'yes' if op['min_eig'] > 0 else '**NO**'}")
+    else:
+        pd = "not run"
     dy = load(RES / case / f"DYNAMICS_ring_{name}.json") or {}
     ring = " -> ".join(f"{dy[m]['com_pct']:.2f}" for m in ("far", "pair", "full") if m in dy) or "not run"
     ring_m = f"{dy['mfs']['com_pct']:.3f}" if dy.get("mfs") else "not measured"
     return (f"| {cell} | {case} | {N} | {a:g}: {s1} | {m1} | {b:g}: {s2} | {m2} | {chk} | {chk_m} | {pd} | {ring} | {ring_m} |")
+
+
+def psd_row(case: str) -> str | None:
+    _, cell, name, _ = CASES[case]
+    ps, pdj = load(RES / case / f"PSD_{name}.json"), load(RES / case / f"PD_{name}.json")
+    if not ps and not pdj:
+        return None
+    raw = "not run"
+    if pdj:
+        cells = [v for k, v in pdj["cells"].items() if k.endswith("|full")] or [v for k, v in pdj["cells"].items() if k.endswith("|pair")]
+        if cells:
+            raw = (f"{sum(c['pd'] for c in cells)} of {sum(c['n'] for c in cells)}; worst {min(c['min'] for c in cells):+.2f}; "
+                   f"largest change {max(c.get('change_max_pct', float('nan')) for c in cells):.2f} %")
+    if ps:
+        m = ps["modes"].get("full") or ps["modes"].get("pair")
+        held = (f"{ps['n']} | {ps['truth_lam_min']:.4f} | {m['lam_raw_min']:+.4f} | {m['weyl_median']:.3f} | {m['pd_raw']} of {m['n']} | "
+                f"{m['w_raw']:.2f} -> {m['w_proj']:.2f} | {m['v_raw']:.2f} -> {m['v_proj']:.2f} | {m['worse_w']}")
+    else:
+        held = "not run | | | | | | |"
+    return f"| {cell.replace('1', '2').replace('3', '4')} | {case} | {raw} | {held} |"
 
 
 def resolutions() -> tuple:
@@ -135,17 +163,31 @@ def build(acc: str, ref: str) -> str:
               "Whole matrix = Frobenius error of the full operator's grand mobility matrix on one small "
               "suspension (16 particles in the full runs).  Ring = centre-of-mass error (% of the distance fallen) of 5 particles sedimenting.", "",
               "| cell | case | N | phi: far -> two-body -> many-body (trans / rot) | MFS fine vs Xfine | phi: far -> two-body -> many-body (trans / rot) | "
-              "MFS fine vs Xfine | whole matrix vs MFS | MFS fine vs Xfine (matrix) | positive definite | ring: far -> two-body -> many-body | "
+              "MFS fine vs Xfine | whole matrix vs MFS | MFS fine vs Xfine (matrix) | positive definite (held-out clusters) | ring: far -> two-body -> many-body | "
               "MFS fine vs Xfine (ring) |", "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     rows = [full_body_row(c) for c in CASES if (RES / c).is_dir()]
     lines += [r for r in rows if r] or ["| (no suspension results yet) | | | | | | | | | | | |"]
-    lines += ["", "## 3. Every result, with its conditions", ""]
+    lines += ["", "## 3. Positive definiteness", "",
+              "Every operator matrix is projected onto the positive semi-definite matrices in the metric of the isolated "
+              "particles (psd.py), so the operator is positive definite in every configuration.  'Raw' is the sum of the "
+              "blocks before that step.  Random suspensions: the PD test (N 16-100, phi 0.05-0.2), + many-body operator.  "
+              "Held-out clusters: MFS matrices of clusters never used in training; eigenvalues relative to the isolated "
+              "particles; Weyl |M - T|_2 = the spectral norm of the raw error, which bounds how far the raw smallest "
+              "eigenvalue can be from the truth's.  The last column must be 0: the projection never moves the operator "
+              "further from the truth in its metric.", "",
+              "| cell | case | raw positive definite, random suspensions; worst eigenvalue ratio; largest change by the projection | "
+              "held-out clusters | truth's smallest eigenvalue (min) | raw smallest (min) | Weyl |M - T|_2 (median) | raw positive definite | "
+              "error in the metric: raw -> projected | velocity error: raw -> projected | worse after the projection |",
+              "|---|---|---|---|---|---|---|---|---|---|---|"]
+    rows = [psd_row(c) for c in CASES if (RES / c).is_dir()]
+    lines += [r for r in rows if r] or ["| (no positive-definiteness results yet) | | | | | | | | | | |"]
+    lines += ["", "## 4. Every result, with its conditions", ""]
     for case, (c2, cf, name, what) in CASES.items():
         files = sorted((RES / case).glob("*.md")) if (RES / case).is_dir() else []
         if not files:
             continue
         lines += [f"### Case {case} (cells {c2} and {cf}): {what}", ""]
-        order = {"CLOUDS": 0, "PAIR": 1, "SUSPENSION": 2, "DYNAMICS": 3, "CHECK": 4, "PD": 5, "CEILING": 6}
+        order = {"CLOUDS": 0, "PAIR": 1, "SUSPENSION": 2, "DYNAMICS": 3, "CHECK": 4, "PD": 5, "PSD": 6, "CEILING": 7}
         for f in sorted(files, key=lambda p: (order.get(p.stem.split("_")[0], 9), p.name)):
             body = f.read_text(encoding="utf-8").strip().splitlines()
             lines += ["#" * 3 + ln if ln.startswith("#") else ln for ln in body] + [""]
