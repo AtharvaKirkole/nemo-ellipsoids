@@ -92,7 +92,8 @@ def full_body_row(case: str) -> str | None:
     pm = (ps.get("modes") or {})
     pm = pm.get("full") or pm.get("pair") or {}
     if pm:
-        pd = (f"raw {pm['pd_raw']} of {pm['n']}; operator always (velocity error {pm['v_raw']:.2f} -> {pm['v_proj']:.2f})")
+        after = pm["n"] if pm.get("lam_proj_min", 0) > 0 else "**NOT ALL**"
+        pd = (f"before the fix {pm['pd_raw']} of {pm['n']} -> after {after} of {pm['n']} (velocity error {pm['v_raw']:.2f} -> {pm['v_proj']:.2f})")
     elif op:
         pd = (f"raw {'yes' if op.get('min_eig_raw', op['min_eig']) > 0 else 'no'}; operator {'yes' if op['min_eig'] > 0 else '**NO**'}")
     else:
@@ -116,7 +117,7 @@ def psd_row(case: str) -> str | None:
                    f"largest change {max(c.get('change_max_pct', float('nan')) for c in cells):.2f} %")
     if ps:
         m = ps["modes"].get("full") or ps["modes"].get("pair")
-        held = (f"{ps['n']} | {ps['truth_lam_min']:.4f} | {m['lam_raw_min']:+.4f} | {m['weyl_median']:.3f} | {m['pd_raw']} of {m['n']} | "
+        held = (f"{ps['n']} | {ps['truth_lam_min']:.4f} | {m['lam_raw_min']:+.4f} | {m['weyl_median']:.3f} | {m['pd_raw']} -> {m['n'] if m.get('lam_proj_min', 0) > 0 else '**NOT ALL**'} of {m['n']} | "
                 f"{m['w_raw']:.2f} -> {m['w_proj']:.2f} | {m['v_raw']:.2f} -> {m['v_proj']:.2f} | {m['worse_w']}")
     else:
         held = "not run | | | | | | |"
@@ -176,7 +177,7 @@ def build(acc: str, ref: str) -> str:
               "eigenvalue can be from the truth's.  The last column must be 0: the projection never moves the operator "
               "further from the truth in its metric.", "",
               "| cell | case | raw positive definite, random suspensions; worst eigenvalue ratio; largest change by the projection | "
-              "held-out clusters | truth's smallest eigenvalue (min) | raw smallest (min) | Weyl |M - T|_2 (median) | raw positive definite | "
+              "held-out clusters | truth's smallest eigenvalue (min) | raw smallest (min) | Weyl |M - T|_2 (median) | positive definite: before -> after the fix | "
               "error in the metric: raw -> projected | velocity error: raw -> projected | worse after the projection |",
               "|---|---|---|---|---|---|---|---|---|---|---|"]
     rows = [psd_row(c) for c in CASES if (RES / c).is_dir()]
