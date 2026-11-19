@@ -111,7 +111,7 @@ GPU-hours for everything; case 1A alone is much less.
 | `CUT=contact bash code/run.sh` | the variant where the learned range is set by contact factor (< 4) instead of distance; results in `results_contact/` |
 | `bash code/experiments.sh` | physics experiments with MFS at every step: orbits of two settling particles, three settling particles, a settling cloud, short-time diffusion, spinners, a flexible fibre |
 | `bash code/stress.sh` | stresslet / strain truth and a two-body stress model, and periodic-box numbers (hindered settling, viscosity) |
-| `bash code/movies.sh` | movies of settling spheroids (MFS against the operator) |
+| `bash code/movies_all.sh` | 22 movies, a two-body and a full-body one for every row A-D of both forms, each frame showing three views (along x, y, z): MFS against the operator; `RENDER=1` redraws from saved trajectories |
 
 These need the models of the main run (`pair_*.pt`, `nbody_*.pt`, `nself_*.pt`) in the workspaces.
 
@@ -166,9 +166,9 @@ Stated so that nobody is surprised by them:
 | `makedata.py`, `train.py` | data generation and training (resumable) |
 | `evaluate.py`, `report.py` | every test and the combined report |
 | `periodic.py`, `stress.py` | periodic box, stress model |
-| `experiments.py`, `movie.py` | physics experiments, movies |
+| `experiments.py`, `movie.py` | physics experiments, movies (three views per frame) |
 | `tests.py` | tests of what holds by construction |
-| `run.sh`, `experiments.sh`, `stress.sh`, `movies.sh`, `env.sh` | the pipelines as Slurm jobs, and the job environment |
+| `run.sh`, `experiments.sh`, `stress.sh`, `movies.sh`, `movies_all.sh`, `env.sh` | the pipelines as Slurm jobs, and the job environment |
 
 Shapes are registered in `data/points/shapes.json` of each workspace (name → three semi-axes). A new shape needs its
 clouds (`b_<name>_<acc>.txt` boundary nodes, `s_<name>_<acc>.txt` sources) for each accuracy level used.
