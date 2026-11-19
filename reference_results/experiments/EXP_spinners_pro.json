@@ -1,0 +1,87 @@
+{
+  "steps": 600,
+  "mfs_angle_deg": 20.194125810939404,
+  "far": {
+    "steps": 600,
+    "angle_deg": 20.05139694153815,
+    "angle_err_pct": 0.7067840952240424,
+    "step": 600,
+    "pos": 0.020964332200394762,
+    "axis": 0.00029951153445864116
+  },
+  "pair": {
+    "steps": 600,
+    "angle_deg": 20.054729835224382,
+    "angle_err_pct": 0.6902798220634525,
+    "step": 600,
+    "pos": 0.02043836784781652,
+    "axis": 0.0003002213417899657
+  },
+  "full": {
+    "steps": 600,
+    "angle_deg": 20.02447602605046,
+    "angle_err_pct": 0.840094720995753,
+    "step": 600,
+    "pos": 0.024873726851801132,
+    "axis": 0.00030089435007130496
+  },
+  "conditions": {
+    "models": {
+      "pair": {
+        "file": "data/final/models/pair_pro.pt",
+        "form": "spheroid",
+        "inputs": 12,
+        "true": 12,
+        "pseudo": 27,
+        "r_cut": 12.0,
+        "cut": "distance",
+        "width": 128,
+        "parameters": 54812,
+        "train_sets": [
+          "prolateSpheroid__prolateSpheroid"
+        ],
+        "train_rows": 29490,
+        "steps": 200000,
+        "seed": 0
+      },
+      "nbody": {
+        "file": "data/final/models/nbody_pro.pt",
+        "form": "spheroid",
+        "inputs": 172,
+        "true": 52,
+        "pseudo": 67,
+        "bands": 8,
+        "pair_cutoff": 12.0,
+        "neighbor_cutoff": 12.0,
+        "width": 128,
+        "parameters": 62446,
+        "clusters": "pro",
+        "configs": 263,
+        "rows": 173740,
+        "neighbours_mean": 30.968562219408312,
+        "seed": 0
+      }
+    },
+    "truth": {
+      "acc": "fine",
+      "ref_acc": null,
+      "clouds": {
+        "prolateSpheroid": {
+          "axes": [
+            1.0,
+            1.0,
+            3.0
+          ],
+          "fine": {
+            "nodes": 654,
+            "sources": 572,
+            "trans_pct": 0.000443450516107724,
+            "rot_pct": 0.0019716059255880936,
+            "offdiag": 1.6451992226833644e-05,
+            "asym": 1.6341509596281183e-05
+          }
+        }
+      }
+    }
+  }
+}

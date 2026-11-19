@@ -1,0 +1,7 @@
+# MFS clouds against the exact isolated ellipsoid
+
+For each shape and resolution: boundary nodes / Stokeslet sources, then the largest error (%) of the three translation and of the three rotation mobilities of ONE particle against the exact values (Oberbeck 1876; Jeffery 1922).  This is the absolute accuracy of the truth for a particle with no neighbour.
+
+| shape | semi-axes | coarse: nodes / sources; exact-mobility error trans / rot % | medium: nodes / sources; exact-mobility error trans / rot % | fine: nodes / sources; exact-mobility error trans / rot % | Xfine: nodes / sources; exact-mobility error trans / rot % |
+|---|---|---|---|---|---|
+| oblateSpheroid | 2 : 2 : 1 | 174 / 152; 2.8747 / 0.1707 | 334 / 292; 0.0385 / 0.0193 | 678 / 593; 0.0006 / 0.0016 | 1328 / 1162; 0.0001 / 0.0001 |

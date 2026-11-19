@@ -1,0 +1,178 @@
+{
+  "Rc": 20.00000000000002,
+  "U0": 11.999999999999986,
+  "dt": 0.03333333333333341,
+  "far": {
+    "steps": 400,
+    "seconds": 156.4,
+    "marks": [
+      {
+        "z": 0.24296855664885458,
+        "horizontal": 13.03787347553915,
+        "vertical": 9.26595295494347,
+        "left_behind": 0.0,
+        "alignment": -0.04353961678123116,
+        "step": 0
+      },
+      {
+        "z": -39.03261659926918,
+        "horizontal": 13.188257097079596,
+        "vertical": 8.954265462981372,
+        "left_behind": 0.0,
+        "alignment": -0.05425959840007224,
+        "step": 100
+      },
+      {
+        "z": -78.21030227423564,
+        "horizontal": 13.332861943109222,
+        "vertical": 8.583921779123301,
+        "left_behind": 0.0,
+        "alignment": -0.14830061336016487,
+        "step": 200
+      },
+      {
+        "z": -157.29466717816553,
+        "horizontal": 12.964496184583506,
+        "vertical": 9.039743707629952,
+        "left_behind": 0.0,
+        "alignment": -0.04165711943310064,
+        "step": 400
+      }
+    ]
+  },
+  "pair": {
+    "steps": 116,
+    "seconds": 83.0,
+    "marks": [
+      {
+        "z": 0.24296855664885458,
+        "horizontal": 13.03787347553915,
+        "vertical": 9.26595295494347,
+        "left_behind": 0.0,
+        "alignment": -0.04353961678123116,
+        "step": 0
+      },
+      {
+        "z": -38.899059692442336,
+        "horizontal": 13.18917710386342,
+        "vertical": 8.94235023943598,
+        "left_behind": 0.0,
+        "alignment": -0.051558535548713244,
+        "step": 100
+      },
+      {
+        "z": -45.14235631760985,
+        "horizontal": 13.217914878018117,
+        "vertical": 8.875369380150904,
+        "left_behind": 0.0,
+        "alignment": -0.06299638360884238,
+        "step": 116
+      },
+      {
+        "z": -45.14235631760985,
+        "horizontal": 13.217914878018117,
+        "vertical": 8.875369380150904,
+        "left_behind": 0.0,
+        "alignment": -0.06299638360884238,
+        "step": 116
+      }
+    ]
+  },
+  "full": {
+    "steps": 200,
+    "seconds": 171.2,
+    "marks": [
+      {
+        "z": 0.24296855664885458,
+        "horizontal": 13.03787347553915,
+        "vertical": 9.26595295494347,
+        "left_behind": 0.0,
+        "alignment": -0.04353961678123116,
+        "step": 0
+      },
+      {
+        "z": -38.41996396859852,
+        "horizontal": 13.208159705984366,
+        "vertical": 8.896618900215149,
+        "left_behind": 0.0,
+        "alignment": -0.053462358581342254,
+        "step": 100
+      },
+      {
+        "z": -76.91592901877236,
+        "horizontal": 13.41622128732344,
+        "vertical": 8.417656678561444,
+        "left_behind": 0.0,
+        "alignment": -0.13934964078425482,
+        "step": 200
+      },
+      {
+        "z": -76.91592901877236,
+        "horizontal": 13.41622128732344,
+        "vertical": 8.417656678561444,
+        "left_behind": 0.0,
+        "alignment": -0.13934964078425482,
+        "step": 200
+      }
+    ]
+  },
+  "conditions": {
+    "models": {
+      "pair": {
+        "file": "data/final/models/pair_obl.pt",
+        "form": "spheroid",
+        "inputs": 12,
+        "true": 12,
+        "pseudo": 27,
+        "r_cut": 12.0,
+        "cut": "distance",
+        "width": 128,
+        "parameters": 54812,
+        "train_sets": [
+          "oblateSpheroid__oblateSpheroid"
+        ],
+        "train_rows": 29490,
+        "steps": 200000,
+        "seed": 0
+      },
+      "nbody": {
+        "file": "data/final/models/nbody_obl.pt",
+        "form": "spheroid",
+        "inputs": 172,
+        "true": 52,
+        "pseudo": 67,
+        "bands": 8,
+        "pair_cutoff": 12.0,
+        "neighbor_cutoff": 12.0,
+        "width": 128,
+        "parameters": 62446,
+        "clusters": "obl",
+        "configs": 264,
+        "rows": 157186,
+        "neighbours_mean": 27.356405786774904,
+        "seed": 0
+      }
+    },
+    "truth": {
+      "acc": "fine",
+      "ref_acc": null,
+      "clouds": {
+        "oblateSpheroid": {
+          "axes": [
+            2.0,
+            2.0,
+            1.0
+          ],
+          "fine": {
+            "nodes": 678,
+            "sources": 593,
+            "trans_pct": 0.0005801580747477608,
+            "rot_pct": 0.0016304959037594102,
+            "offdiag": 9.626579339917792e-06,
+            "asym": 1.1203789682412676e-05
+          }
+        }
+      }
+    }
+  }
+}

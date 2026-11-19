@@ -1,0 +1,133 @@
+{
+  "0.05|mfs": {
+    "translation": 0.9144872991060105,
+    "rotation": 0.9604991072873927,
+    "particles": 34,
+    "configs": 3
+  },
+  "0.05|far": {
+    "translation": 1.0,
+    "rotation": 1.0,
+    "particles": 34,
+    "configs": 3
+  },
+  "0.05|pair": {
+    "translation": 0.9157421544652008,
+    "rotation": 0.9593060410002291,
+    "particles": 34,
+    "configs": 3
+  },
+  "0.05|full": {
+    "translation": 0.9157421544652008,
+    "rotation": 0.9593060410002291,
+    "particles": 34,
+    "configs": 3
+  },
+  "0.1|mfs": {
+    "translation": 0.8285709400856435,
+    "rotation": 0.8984168035175785,
+    "particles": 31,
+    "configs": 3
+  },
+  "0.1|far": {
+    "translation": 1.0,
+    "rotation": 1.0,
+    "particles": 31,
+    "configs": 3
+  },
+  "0.1|pair": {
+    "translation": 0.8140760366375361,
+    "rotation": 0.8888077133467894,
+    "particles": 31,
+    "configs": 3
+  },
+  "0.1|full": {
+    "translation": 0.8140760366375361,
+    "rotation": 0.8888077133467894,
+    "particles": 31,
+    "configs": 3
+  },
+  "0.2|mfs": {
+    "translation": 0.7104577933206135,
+    "rotation": 0.7930335573221147,
+    "particles": 26,
+    "configs": 3
+  },
+  "0.2|far": {
+    "translation": 1.0,
+    "rotation": 1.0,
+    "particles": 26,
+    "configs": 3
+  },
+  "0.2|pair": {
+    "translation": 0.6482574390873511,
+    "rotation": 0.749734915467536,
+    "particles": 26,
+    "configs": 3
+  },
+  "0.2|full": {
+    "translation": 0.6482574390873511,
+    "rotation": 0.749734915467536,
+    "particles": 26,
+    "configs": 3
+  },
+  "conditions": {
+    "models": {
+      "pair": {
+        "file": "data/final/models/pair_pro.pt",
+        "form": "spheroid",
+        "inputs": 12,
+        "true": 12,
+        "pseudo": 27,
+        "r_cut": 12.0,
+        "cut": "distance",
+        "width": 128,
+        "parameters": 54812,
+        "train_sets": [
+          "prolateSpheroid__prolateSpheroid"
+        ],
+        "train_rows": 29490,
+        "steps": 200000,
+        "seed": 0
+      },
+      "nbody": {
+        "file": "data/final/models/nbody_pro.pt",
+        "form": "spheroid",
+        "inputs": 172,
+        "true": 52,
+        "pseudo": 67,
+        "bands": 8,
+        "pair_cutoff": 12.0,
+        "neighbor_cutoff": 12.0,
+        "width": 128,
+        "parameters": 62446,
+        "clusters": "pro",
+        "configs": 263,
+        "rows": 173740,
+        "neighbours_mean": 30.968562219408312,
+        "seed": 0
+      }
+    },
+    "truth": {
+      "acc": "fine",
+      "ref_acc": null,
+      "clouds": {
+        "prolateSpheroid": {
+          "axes": [
+            1.0,
+            1.0,
+            3.0
+          ],
+          "fine": {
+            "nodes": 654,
+            "sources": 572,
+            "trans_pct": 0.000443450516107724,
+            "rot_pct": 0.0019716059255880936,
+            "offdiag": 1.6451992226833644e-05,
+            "asym": 1.6341509596281183e-05
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+workspaces/
+logs/
+results/
+results_contact/
+results_smoke/
+results_smoke_contact/

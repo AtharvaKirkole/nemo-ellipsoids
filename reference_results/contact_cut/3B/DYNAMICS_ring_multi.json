@@ -1,0 +1,127 @@
+{
+  "truth_steps": 449,
+  "fell": 51.37351151606579,
+  "far": {
+    "steps": 119,
+    "compared_at": 119,
+    "com_pct": 6.585325869596675,
+    "pos_max": 1.208315008351095,
+    "axis_deg_max": 22.078011659469052
+  },
+  "pair": {
+    "steps": 152,
+    "compared_at": 152,
+    "com_pct": 2.6002604535330587,
+    "pos_max": 0.818949619596123,
+    "axis_deg_max": 15.809717948038948
+  },
+  "full": {
+    "steps": 172,
+    "compared_at": 172,
+    "com_pct": 1.3909863270434104,
+    "pos_max": 0.4255324480846727,
+    "axis_deg_max": 3.5430399653279356
+  },
+  "mfs": {
+    "steps": 449,
+    "compared_at": 449,
+    "com_pct": 0.006644573092209489,
+    "pos_max": 0.006253576260766715,
+    "axis_deg_max": 0.3578581975958759
+  },
+  "conditions": {
+    "models": {
+      "pair": {
+        "file": "data/final_c/models/pair_multi.pt",
+        "form": "triaxial",
+        "inputs": 22,
+        "true": 34,
+        "pseudo": 61,
+        "r_cut": 4.0,
+        "cut": "contact",
+        "width": 128,
+        "parameters": 84988,
+        "train_sets": [
+          "triaxial_123__triaxial_123",
+          "triaxial_1p5_2__triaxial_1p5_2",
+          "triaxial_1p5_3__triaxial_1p5_3",
+          "triaxial_2_4__triaxial_2_4",
+          "triaxial_2_5__triaxial_2_5",
+          "triaxial_3_4__triaxial_3_4"
+        ],
+        "train_rows": 65236,
+        "steps": 400000,
+        "seed": 0
+      },
+      "nbody": {
+        "file": "data/final_c/models/nbody_multi.pt",
+        "form": "triaxial",
+        "inputs": 182,
+        "true": 74,
+        "pseudo": 101,
+        "bands": 8,
+        "pair_cutoff": 14.0,
+        "neighbor_cutoff": 14.0,
+        "width": 128,
+        "parameters": 71006,
+        "clusters": "multi",
+        "configs": 238,
+        "rows": 101930,
+        "neighbours_mean": 22.952437947611106,
+        "seed": 0
+      },
+      "nself": {
+        "file": "data/final_c/models/nself_multi.pt",
+        "inputs": 114,
+        "true": 43,
+        "pseudo": 40,
+        "bands": 8,
+        "neighbor_cutoff": 14.0,
+        "width": 128,
+        "rows": 6032,
+        "pairwise_sum": 1.706041932106018,
+        "with_self_model": 0.961060643196106
+      }
+    },
+    "truth": {
+      "acc": "fine",
+      "ref_acc": "Xfine",
+      "clouds": {
+        "triaxial_2_4": {
+          "axes": [
+            1.0,
+            2.0,
+            4.0
+          ],
+          "fine": {
+            "nodes": 857,
+            "sources": 727,
+            "trans_pct": 0.0049527985336972336,
+            "rot_pct": 0.002238774654139686,
+            "offdiag": 0.00014498017253958758,
+            "asym": 0.00010055360930549882
+          },
+          "Xfine": {
+            "nodes": 1817,
+            "sources": 1545,
+            "trans_pct": 0.0015328659755287077,
+            "rot_pct": 0.00498700713839062,
+            "offdiag": 1.500775470526216e-05,
+            "asym": 1.935061229209265e-05
+          }
+        }
+      }
+    },
+    "case": "ring",
+    "shapes": [
+      "triaxial_2_4",
+      "triaxial_2_4",
+      "triaxial_2_4",
+      "triaxial_2_4",
+      "triaxial_2_4"
+    ],
+    "contact": 1.25,
+    "dt": 0.1,
+    "steps": 600
+  }
+}

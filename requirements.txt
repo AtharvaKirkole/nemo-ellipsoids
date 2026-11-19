@@ -1,0 +1,6 @@
+# Python >= 3.10.  Install torch built for your CUDA first (https://pytorch.org), then the rest.
+torch>=2.1
+numpy
+scipy
+ninja          # compiles the MFS CUDA kernel at first use (also needs nvcc on PATH and CUDA_HOME)
+matplotlib     # movies and experiments only

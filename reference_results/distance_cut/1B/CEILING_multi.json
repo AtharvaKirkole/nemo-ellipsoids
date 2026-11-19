@@ -1,0 +1,188 @@
+{
+  "cells": {
+    "0.05|64|far": {
+      "all": 7.444716685280731,
+      "trans": 7.488565922262576,
+      "rot": 6.957071405247995,
+      "n": 3
+    },
+    "0.05|64|pair": {
+      "all": 5.0621252106767365,
+      "trans": 5.124877855074024,
+      "rot": 4.34783338820166,
+      "n": 3
+    },
+    "0.05|64|full": {
+      "all": 1.9621849024652807,
+      "trans": 1.923270887126379,
+      "rot": 2.337799930133123,
+      "n": 3
+    },
+    "0.05|64|exact f_nb": {
+      "all": 1.1842511648809788,
+      "trans": 1.2073632758336041,
+      "rot": 0.8956093221580611,
+      "n": 3
+    },
+    "0.05|64|exact f_nb + exact self": {
+      "all": 1.14434423488467,
+      "trans": 1.1720100076590656,
+      "rot": 0.7882135213857827,
+      "n": 3
+    },
+    "0.1|64|far": {
+      "all": 12.445006963389636,
+      "trans": 12.382721398596836,
+      "rot": 13.244763938930582,
+      "n": 3
+    },
+    "0.1|64|pair": {
+      "all": 9.097432386214878,
+      "trans": 9.09286716935499,
+      "rot": 9.425548737177062,
+      "n": 3
+    },
+    "0.1|64|full": {
+      "all": 3.0713335886766484,
+      "trans": 3.0013531154774196,
+      "rot": 3.865732244590306,
+      "n": 3
+    },
+    "0.1|64|exact f_nb": {
+      "all": 1.8955204315751966,
+      "trans": 1.9294656318185712,
+      "rot": 1.5329528779822705,
+      "n": 3
+    },
+    "0.1|64|exact f_nb + exact self": {
+      "all": 1.6306169984034193,
+      "trans": 1.6776763392278253,
+      "rot": 1.004266537603841,
+      "n": 3
+    },
+    "0.2|64|far": {
+      "all": 23.921662560494553,
+      "trans": 24.162499485187613,
+      "rot": 25.543023058085335,
+      "n": 3
+    },
+    "0.2|64|pair": {
+      "all": 19.818589978599572,
+      "trans": 20.119215991187975,
+      "rot": 20.50046121084308,
+      "n": 3
+    },
+    "0.2|64|full": {
+      "all": 5.975903987575239,
+      "trans": 5.905044140932655,
+      "rot": 7.720474803398645,
+      "n": 3
+    },
+    "0.2|64|exact f_nb": {
+      "all": 3.2504600177242526,
+      "trans": 3.2912040023326803,
+      "rot": 3.4383914199993675,
+      "n": 3
+    },
+    "0.2|64|exact f_nb + exact self": {
+      "all": 1.8875134658511052,
+      "trans": 1.987623277042023,
+      "rot": 1.0943824004036011,
+      "n": 3
+    }
+  },
+  "conditions": {
+    "models": {
+      "pair": {
+        "file": "data/final/models/pair_multi.pt",
+        "form": "spheroid",
+        "inputs": 12,
+        "true": 12,
+        "pseudo": 27,
+        "r_cut": 12.0,
+        "cut": "distance",
+        "width": 128,
+        "parameters": 54812,
+        "train_sets": [
+          "prolate_ar1p5__prolate_ar1p5",
+          "prolate_ar2__prolate_ar2",
+          "prolateSpheroid__prolateSpheroid",
+          "prolate_ar4__prolate_ar4",
+          "oblate_ar1p5__oblate_ar1p5",
+          "oblateSpheroid__oblateSpheroid",
+          "oblate_ar3__oblate_ar3"
+        ],
+        "train_rows": 95840,
+        "steps": 400000,
+        "seed": 0
+      },
+      "nbody": {
+        "file": "data/final/models/nbody_multi.pt",
+        "form": "spheroid",
+        "inputs": 172,
+        "true": 52,
+        "pseudo": 67,
+        "bands": 8,
+        "pair_cutoff": 12.0,
+        "neighbor_cutoff": 12.0,
+        "width": 128,
+        "parameters": 62446,
+        "clusters": "multi",
+        "configs": 254,
+        "rows": 165480,
+        "neighbours_mean": 34.68670534203529,
+        "seed": 0
+      },
+      "nself": {
+        "file": "data/final/models/nself_multi.pt",
+        "inputs": 114,
+        "true": 43,
+        "pseudo": 40,
+        "bands": 8,
+        "neighbor_cutoff": 12.0,
+        "width": 128,
+        "rows": 7152,
+        "pairwise_sum": 1.7184349298477173,
+        "with_self_model": 1.070871114730835
+      }
+    },
+    "truth": {
+      "acc": "fine",
+      "ref_acc": "Xfine",
+      "clouds": {
+        "prolate_ar2": {
+          "axes": [
+            1.0,
+            1.0,
+            2.0
+          ],
+          "fine": {
+            "nodes": 660,
+            "sources": 560,
+            "trans_pct": 6.488599280096707e-06,
+            "rot_pct": 2.6393454533035765e-05,
+            "offdiag": 1.0335742919965304e-07,
+            "asym": 1.7181706206011718e-07
+          },
+          "Xfine": {
+            "nodes": 1400,
+            "sources": 1190,
+            "trans_pct": 1.0185956522690276e-07,
+            "rot_pct": 2.8087885350913666e-07,
+            "offdiag": 1.2892498423679104e-09,
+            "asym": 2.242133284380316e-09
+          }
+        }
+      }
+    },
+    "N": [
+      64
+    ],
+    "phi": [
+      0.05,
+      0.1,
+      0.2
+    ],
+    "seeds": 3
+  }
+}

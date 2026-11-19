@@ -1,0 +1,332 @@
+{
+  "grid": {
+    "4.50|0": {
+      "outcome": "SCATTER",
+      "turns": 0,
+      "steps": 2400,
+      "smax": 8.377856366509269
+    },
+    "4.50|15": {
+      "outcome": "SCATTER",
+      "turns": 2,
+      "steps": 2400,
+      "smax": 4.820257814050858
+    },
+    "4.50|30": {
+      "outcome": "BOUND",
+      "turns": 6,
+      "steps": 2400,
+      "smax": 2.2497353450427457
+    },
+    "4.50|45": {
+      "outcome": "TOO CLOSE",
+      "turns": 0,
+      "steps": 0,
+      "smax": 0.0
+    },
+    "4.50|60": {
+      "outcome": "TOO CLOSE",
+      "turns": 0,
+      "steps": 0,
+      "smax": 0.0
+    },
+    "4.50|75": {
+      "outcome": "TOO CLOSE",
+      "turns": 0,
+      "steps": 0,
+      "smax": 0.0
+    },
+    "4.50|90": {
+      "outcome": "TOO CLOSE",
+      "turns": 0,
+      "steps": 0,
+      "smax": 0.0
+    },
+    "6.00|0": {
+      "outcome": "SCATTER",
+      "turns": 0,
+      "steps": 2400,
+      "smax": 12.42642431390009
+    },
+    "6.00|15": {
+      "outcome": "SCATTER",
+      "turns": 0,
+      "steps": 2400,
+      "smax": 11.464916107524681
+    },
+    "6.00|30": {
+      "outcome": "UNDECIDED",
+      "turns": 1,
+      "steps": 2400,
+      "smax": 4.766052720028497
+    },
+    "6.00|45": {
+      "outcome": "BOUND",
+      "turns": 6,
+      "steps": 2400,
+      "smax": 1.8647594483482006
+    },
+    "6.00|60": {
+      "outcome": "BOUND",
+      "turns": 11,
+      "steps": 2400,
+      "smax": 1.234619467001913
+    },
+    "6.00|75": {
+      "outcome": "TOO CLOSE",
+      "turns": 0,
+      "steps": 0,
+      "smax": 0.0
+    },
+    "6.00|90": {
+      "outcome": "TOO CLOSE",
+      "turns": 0,
+      "steps": 0,
+      "smax": 0.0
+    },
+    "7.50|0": {
+      "outcome": "SCATTER",
+      "turns": 0,
+      "steps": 2400,
+      "smax": 10.886213500216991
+    },
+    "7.50|15": {
+      "outcome": "SCATTER",
+      "turns": 0,
+      "steps": 2400,
+      "smax": 10.936196308988274
+    },
+    "7.50|30": {
+      "outcome": "SCATTER",
+      "turns": 0,
+      "steps": 2400,
+      "smax": 8.78237655724483
+    },
+    "7.50|45": {
+      "outcome": "SCATTER",
+      "turns": 2,
+      "steps": 2400,
+      "smax": 2.6668145399301015
+    },
+    "7.50|60": {
+      "outcome": "BOUND",
+      "turns": 6,
+      "steps": 2400,
+      "smax": 1.3905646383352928
+    },
+    "7.50|75": {
+      "outcome": "BOUND",
+      "turns": 10,
+      "steps": 2400,
+      "smax": 1.0719759005869507
+    },
+    "7.50|90": {
+      "outcome": "BOUND",
+      "turns": 10,
+      "steps": 2400,
+      "smax": 1.0000000221830168
+    },
+    "9.00|0": {
+      "outcome": "SCATTER",
+      "turns": 0,
+      "steps": 2400,
+      "smax": 9.131515028576079
+    },
+    "9.00|15": {
+      "outcome": "SCATTER",
+      "turns": 0,
+      "steps": 2400,
+      "smax": 9.564315491428623
+    },
+    "9.00|30": {
+      "outcome": "SCATTER",
+      "turns": 0,
+      "steps": 2400,
+      "smax": 8.82950287462883
+    },
+    "9.00|45": {
+      "outcome": "SCATTER",
+      "turns": 0,
+      "steps": 2400,
+      "smax": 4.419820267107713
+    },
+    "9.00|60": {
+      "outcome": "BOUND",
+      "turns": 4,
+      "steps": 2400,
+      "smax": 1.5647268653980295
+    },
+    "9.00|75": {
+      "outcome": "BOUND",
+      "turns": 7,
+      "steps": 2400,
+      "smax": 1.0985969947618812
+    },
+    "9.00|90": {
+      "outcome": "BOUND",
+      "turns": 7,
+      "steps": 2400,
+      "smax": 1.0
+    },
+    "12.00|0": {
+      "outcome": "SCATTER",
+      "turns": 0,
+      "steps": 2400,
+      "smax": 6.507546579289162
+    },
+    "12.00|15": {
+      "outcome": "SCATTER",
+      "turns": 0,
+      "steps": 2400,
+      "smax": 7.250624090426894
+    },
+    "12.00|30": {
+      "outcome": "SCATTER",
+      "turns": 0,
+      "steps": 2400,
+      "smax": 7.4796274299320125
+    },
+    "12.00|45": {
+      "outcome": "SCATTER",
+      "turns": 0,
+      "steps": 2400,
+      "smax": 5.967148822960226
+    },
+    "12.00|60": {
+      "outcome": "UNDECIDED",
+      "turns": 2,
+      "steps": 2400,
+      "smax": 2.038815758098354
+    },
+    "12.00|75": {
+      "outcome": "BOUND",
+      "turns": 4,
+      "steps": 2400,
+      "smax": 1.1505994555874248
+    },
+    "12.00|90": {
+      "outcome": "BOUND",
+      "turns": 5,
+      "steps": 2400,
+      "smax": 1.0000000007738588
+    },
+    "15.00|0": {
+      "outcome": "SCATTER",
+      "turns": 0,
+      "steps": 2400,
+      "smax": 4.8589685254588675
+    },
+    "15.00|15": {
+      "outcome": "SCATTER",
+      "turns": 0,
+      "steps": 2400,
+      "smax": 5.722602478826019
+    },
+    "15.00|30": {
+      "outcome": "SCATTER",
+      "turns": 0,
+      "steps": 2400,
+      "smax": 6.265614996137381
+    },
+    "15.00|45": {
+      "outcome": "SCATTER",
+      "turns": 0,
+      "steps": 2400,
+      "smax": 5.592568124828613
+    },
+    "15.00|60": {
+      "outcome": "SCATTER",
+      "turns": 0,
+      "steps": 2400,
+      "smax": 2.8627749699504945
+    },
+    "15.00|75": {
+      "outcome": "BOUND",
+      "turns": 3,
+      "steps": 2400,
+      "smax": 1.2041161938320792
+    },
+    "15.00|90": {
+      "outcome": "BOUND",
+      "turns": 3,
+      "steps": 2400,
+      "smax": 1.0
+    }
+  },
+  "truth": {
+    "9.00|30": {
+      "operator": "SCATTER",
+      "mfs": "SCATTER",
+      "step": 2400,
+      "pos": 0.0818821234691945,
+      "axis": 0.1803342610315312,
+      "sep_pct": 0.022006790346146398
+    },
+    "9.00|60": {
+      "operator": "BOUND",
+      "mfs": "BOUND",
+      "step": 2400,
+      "pos": 0.02511676926200633,
+      "axis": 0.2100254772370294,
+      "sep_pct": 0.08865426553183364
+    },
+    "12.00|60": {
+      "operator": "UNDECIDED",
+      "mfs": "UNDECIDED",
+      "step": 2400,
+      "pos": 0.06931171238619133,
+      "axis": 0.752735090082904,
+      "sep_pct": 0.40789306012872933
+    },
+    "4.50|0": {
+      "operator": "SCATTER",
+      "mfs": "SCATTER",
+      "step": 2400,
+      "pos": 0.07642375504495413,
+      "axis": 0.15249355169325748,
+      "sep_pct": 0.216912221156258
+    }
+  },
+  "conditions": {
+    "models": {
+      "pair": {
+        "file": "data/final/models/pair_pro.pt",
+        "form": "spheroid",
+        "inputs": 12,
+        "true": 12,
+        "pseudo": 27,
+        "r_cut": 12.0,
+        "cut": "distance",
+        "width": 128,
+        "parameters": 54812,
+        "train_sets": [
+          "prolateSpheroid__prolateSpheroid"
+        ],
+        "train_rows": 29490,
+        "steps": 200000,
+        "seed": 0
+      }
+    },
+    "truth": {
+      "acc": "fine",
+      "ref_acc": null,
+      "clouds": {
+        "prolateSpheroid": {
+          "axes": [
+            1.0,
+            1.0,
+            3.0
+          ],
+          "fine": {
+            "nodes": 654,
+            "sources": 572,
+            "trans_pct": 0.000443450516107724,
+            "rot_pct": 0.0019716059255880936,
+            "offdiag": 1.6451992226833644e-05,
+            "asym": 1.6341509596281183e-05
+          }
+        }
+      }
+    }
+  }
+}

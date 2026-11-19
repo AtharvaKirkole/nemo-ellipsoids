@@ -1,0 +1,109 @@
+{
+  "mfs_min_eig": 0.0033442305067987845,
+  "mfs_asymmetry": 2.474250017095969e-05,
+  "far": {
+    "asymmetry": 1.2974882060992928e-16,
+    "min_eig": 0.005764928690233505,
+    "rotation": 7.046334284460148e-16,
+    "vs_mfs_pct": 8.907833355596347
+  },
+  "pair": {
+    "asymmetry": 8.393071586565841e-17,
+    "min_eig": 0.0008970862215883738,
+    "rotation": 5.549491524646839e-16,
+    "vs_mfs_pct": 5.454814014106908
+  },
+  "full": {
+    "asymmetry": 9.14373111240339e-17,
+    "min_eig": 0.0030884675356053696,
+    "rotation": 5.868084698538078e-16,
+    "vs_mfs_pct": 1.9450186520641521
+  },
+  "mfs": {
+    "asymmetry": 6.1866132269602835e-06,
+    "min_eig": 0.0033390872576359045,
+    "vs_mfs_pct": 0.004346624466368199
+  },
+  "conditions": {
+    "models": {
+      "pair": {
+        "file": "data/final_c/models/pair_obl.pt",
+        "form": "spheroid",
+        "inputs": 12,
+        "true": 12,
+        "pseudo": 27,
+        "r_cut": 4.0,
+        "cut": "contact",
+        "width": 128,
+        "parameters": 54812,
+        "train_sets": [
+          "oblateSpheroid__oblateSpheroid"
+        ],
+        "train_rows": 29038,
+        "steps": 200000,
+        "seed": 0
+      },
+      "nbody": {
+        "file": "data/final_c/models/nbody_obl.pt",
+        "form": "spheroid",
+        "inputs": 172,
+        "true": 52,
+        "pseudo": 67,
+        "bands": 8,
+        "pair_cutoff": 12.0,
+        "neighbor_cutoff": 12.0,
+        "width": 128,
+        "parameters": 62446,
+        "clusters": "obl",
+        "configs": 266,
+        "rows": 162722,
+        "neighbours_mean": 28.24552303929401,
+        "seed": 0
+      },
+      "nself": {
+        "file": "data/final_c/models/nself_obl.pt",
+        "inputs": 114,
+        "true": 43,
+        "pseudo": 40,
+        "bands": 8,
+        "neighbor_cutoff": 12.0,
+        "width": 128,
+        "rows": 7824,
+        "pairwise_sum": 2.2174642086029053,
+        "with_self_model": 1.0732108354568481
+      }
+    },
+    "truth": {
+      "acc": "fine",
+      "ref_acc": "Xfine",
+      "clouds": {
+        "oblateSpheroid": {
+          "axes": [
+            2.0,
+            2.0,
+            1.0
+          ],
+          "fine": {
+            "nodes": 678,
+            "sources": 593,
+            "trans_pct": 0.0005801580747477608,
+            "rot_pct": 0.0016304959037594102,
+            "offdiag": 9.626579339917792e-06,
+            "asym": 1.1203789682412676e-05
+          },
+          "Xfine": {
+            "nodes": 1328,
+            "sources": 1162,
+            "trans_pct": 8.099124432225935e-05,
+            "rot_pct": 0.0001433523442839757,
+            "offdiag": 7.79147199242463e-07,
+            "asym": 1.275879856204477e-06
+          }
+        }
+      }
+    },
+    "N": 16,
+    "phi": 0.1,
+    "seed": 0
+  }
+}

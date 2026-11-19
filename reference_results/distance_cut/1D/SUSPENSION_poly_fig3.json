@@ -1,0 +1,401 @@
+{
+  "kinds": [
+    "prolateSpheroid",
+    "oblateSpheroid",
+    "prolate_ar2",
+    "oblate_ar3",
+    "oblateSpheroid_x1p5",
+    "prolateSpheroid_x0p75"
+  ],
+  "cells": {
+    "0.025|200|far": {
+      "all": 4.530980816713127,
+      "trans": 4.6388350442131125,
+      "rot": 3.4561493765393543,
+      "gravity_trans": 1.1744801112640322,
+      "n": 10
+    },
+    "0.025|200|pair": {
+      "all": 2.7063289379313438,
+      "trans": 2.8009276291969685,
+      "rot": 1.613003064826333,
+      "gravity_trans": 0.9735589266785295,
+      "n": 10
+    },
+    "0.025|200|full": {
+      "all": 2.0998129107492014,
+      "trans": 2.172714435476461,
+      "rot": 1.2516594988645282,
+      "gravity_trans": 0.7753015119411047,
+      "n": 10
+    },
+    "0.025|200|mfs": {
+      "all": 0.01585416331770792,
+      "trans": 0.014453269169354124,
+      "rot": 0.025569751818982096,
+      "gravity_trans": 0.0014797638303918998,
+      "n": 1
+    },
+    "0.05|200|far": {
+      "all": 7.900328482394062,
+      "trans": 8.104169319462375,
+      "rot": 5.830727312477227,
+      "gravity_trans": 2.29926709806137,
+      "n": 10
+    },
+    "0.05|200|pair": {
+      "all": 5.503535638993098,
+      "trans": 5.680936612910735,
+      "rot": 3.4488156283293856,
+      "gravity_trans": 1.9722946887534492,
+      "n": 10
+    },
+    "0.05|200|full": {
+      "all": 3.882264904230157,
+      "trans": 4.007136093213573,
+      "rot": 2.4323525805331565,
+      "gravity_trans": 1.4158347754583223,
+      "n": 10
+    },
+    "0.05|200|mfs": {
+      "all": 0.030487576085787938,
+      "trans": 0.028021429892059725,
+      "rot": 0.04619755351140716,
+      "gravity_trans": 0.0019051390829723687,
+      "n": 1
+    },
+    "0.075|200|far": {
+      "all": 9.691770310064289,
+      "trans": 9.820385439113343,
+      "rot": 7.729931362165831,
+      "gravity_trans": 3.2383512927294653,
+      "n": 10
+    },
+    "0.075|200|pair": {
+      "all": 7.222730393417441,
+      "trans": 7.349007814124052,
+      "rot": 5.138350966585167,
+      "gravity_trans": 2.8328608223807863,
+      "n": 10
+    },
+    "0.075|200|full": {
+      "all": 4.660767113121387,
+      "trans": 4.739811142985429,
+      "rot": 3.366028008791391,
+      "gravity_trans": 1.8556205793172729,
+      "n": 10
+    },
+    "0.075|200|mfs": {
+      "all": 0.06384852926688282,
+      "trans": 0.054145651023955736,
+      "rot": 0.12939267861020806,
+      "gravity_trans": 0.011284150556269999,
+      "n": 1
+    },
+    "0.1|200|far": {
+      "all": 14.394348170413702,
+      "trans": 14.871387396534493,
+      "rot": 9.672802550298929,
+      "gravity_trans": 4.296400908623385,
+      "n": 10
+    },
+    "0.1|200|pair": {
+      "all": 10.846820629797637,
+      "trans": 11.232510750269359,
+      "rot": 6.932544649328291,
+      "gravity_trans": 3.8005976191472426,
+      "n": 10
+    },
+    "0.1|200|full": {
+      "all": 6.311193738671116,
+      "trans": 6.528427142140179,
+      "rot": 4.13427301771159,
+      "gravity_trans": 2.3225671212002594,
+      "n": 10
+    },
+    "0.1|200|mfs": {
+      "all": 0.03395295592326747,
+      "trans": 0.03213600396657841,
+      "rot": 0.04979920406746499,
+      "gravity_trans": 0.0031344162072733297,
+      "n": 1
+    },
+    "0.15|200|far": {
+      "all": 18.523222678934705,
+      "trans": 18.896455897911338,
+      "rot": 14.624120461263127,
+      "gravity_trans": 6.186112040882668,
+      "n": 10
+    },
+    "0.15|200|pair": {
+      "all": 14.903173125596988,
+      "trans": 15.248101957346119,
+      "rot": 11.021417821609468,
+      "gravity_trans": 5.523771160067277,
+      "n": 10
+    },
+    "0.15|200|full": {
+      "all": 8.07556471025099,
+      "trans": 8.264000002209627,
+      "rot": 5.985441272327038,
+      "gravity_trans": 3.0255184256331438,
+      "n": 10
+    },
+    "0.15|200|mfs": {
+      "all": 0.0526445248604495,
+      "trans": 0.04064992316782261,
+      "rot": 0.1957709319433358,
+      "gravity_trans": 0.0037642378804705794,
+      "n": 1
+    },
+    "0.2|200|far": {
+      "all": 23.16530259171512,
+      "trans": 23.449439708278334,
+      "rot": 19.583945196508125,
+      "gravity_trans": 8.259198293764701,
+      "n": 8
+    },
+    "0.2|200|pair": {
+      "all": 19.242776883196115,
+      "trans": 19.546286796425008,
+      "rot": 15.036750120848842,
+      "gravity_trans": 7.4348187472188725,
+      "n": 8
+    },
+    "0.2|200|full": {
+      "all": 9.490037125419068,
+      "trans": 9.632240439643002,
+      "rot": 7.498050480189532,
+      "gravity_trans": 3.7544674151701445,
+      "n": 8
+    }
+  },
+  "conditions": {
+    "models": {
+      "pair": {
+        "file": "data/final/models/pair_poly.pt",
+        "form": "spheroid",
+        "inputs": 12,
+        "true": 12,
+        "pseudo": 27,
+        "r_cut": 12.0,
+        "cut": "distance",
+        "width": 256,
+        "parameters": 175004,
+        "train_sets": [
+          "prolate_ar1p5__prolate_ar1p5",
+          "prolate_ar2__prolate_ar2",
+          "prolateSpheroid__prolateSpheroid",
+          "prolate_ar4__prolate_ar4",
+          "oblate_ar1p5__oblate_ar1p5",
+          "oblateSpheroid__oblateSpheroid",
+          "oblate_ar3__oblate_ar3",
+          "prolateSpheroid__oblateSpheroid",
+          "prolate_ar2__oblateSpheroid",
+          "prolate_ar4__oblate_ar3",
+          "prolate_ar2__oblate_ar1p5",
+          "prolate_ar1p5__oblate_ar3",
+          "prolateSpheroid__prolate_ar2",
+          "oblateSpheroid__oblate_ar3",
+          "prolate_ar4__oblateSpheroid",
+          "prolateSpheroid__oblate_ar1p5",
+          "prolateSpheroid_x0p75__prolateSpheroid",
+          "oblateSpheroid_x1p5__oblateSpheroid",
+          "prolate_ar2_x1p5__prolate_ar2",
+          "oblate_ar3_x0p75__oblate_ar3",
+          "oblateSpheroid_x1p5__prolateSpheroid_x0p75",
+          "prolate_ar2_x1p5__oblateSpheroid"
+        ],
+        "train_rows": 162188,
+        "steps": 600000,
+        "seed": 0
+      },
+      "nbody": {
+        "file": "data/final/models/nbody_poly.pt",
+        "form": "spheroid",
+        "inputs": 172,
+        "true": 52,
+        "pseudo": 67,
+        "bands": 8,
+        "pair_cutoff": 12.0,
+        "neighbor_cutoff": 12.0,
+        "width": 128,
+        "parameters": 62446,
+        "clusters": "poly",
+        "configs": 267,
+        "rows": 168500,
+        "neighbours_mean": 30.42646884272997,
+        "seed": 0
+      },
+      "nself": {
+        "file": "data/final/models/nself_poly.pt",
+        "inputs": 114,
+        "true": 43,
+        "pseudo": 40,
+        "bands": 8,
+        "neighbor_cutoff": 12.0,
+        "width": 128,
+        "rows": 8080,
+        "pairwise_sum": 2.3905065059661865,
+        "with_self_model": 1.7489852905273438
+      }
+    },
+    "truth": {
+      "acc": "fine",
+      "ref_acc": "Xfine",
+      "clouds": {
+        "prolateSpheroid": {
+          "axes": [
+            1.0,
+            1.0,
+            3.0
+          ],
+          "fine": {
+            "nodes": 654,
+            "sources": 572,
+            "trans_pct": 0.000443450516107724,
+            "rot_pct": 0.0019716059255880936,
+            "offdiag": 1.6451992226833644e-05,
+            "asym": 1.6341509596281183e-05
+          },
+          "Xfine": {
+            "nodes": 1388,
+            "sources": 1214,
+            "trans_pct": 8.836640150722275e-05,
+            "rot_pct": 0.00034470878134129634,
+            "offdiag": 7.657411559473042e-07,
+            "asym": 1.1709955265918085e-06
+          }
+        },
+        "oblateSpheroid": {
+          "axes": [
+            2.0,
+            2.0,
+            1.0
+          ],
+          "fine": {
+            "nodes": 678,
+            "sources": 593,
+            "trans_pct": 0.0005801580747477608,
+            "rot_pct": 0.0016304959037594102,
+            "offdiag": 9.626579339917792e-06,
+            "asym": 1.1203789682412676e-05
+          },
+          "Xfine": {
+            "nodes": 1328,
+            "sources": 1162,
+            "trans_pct": 8.099124432225935e-05,
+            "rot_pct": 0.0001433523442839757,
+            "offdiag": 7.79147199242463e-07,
+            "asym": 1.275879856204477e-06
+          }
+        },
+        "prolate_ar2": {
+          "axes": [
+            1.0,
+            1.0,
+            2.0
+          ],
+          "fine": {
+            "nodes": 660,
+            "sources": 560,
+            "trans_pct": 6.488599280096707e-06,
+            "rot_pct": 2.6393454533035765e-05,
+            "offdiag": 1.0335742919965304e-07,
+            "asym": 1.7181706206011718e-07
+          },
+          "Xfine": {
+            "nodes": 1400,
+            "sources": 1190,
+            "trans_pct": 1.0185956522690276e-07,
+            "rot_pct": 2.8087885350913666e-07,
+            "offdiag": 1.2892498423679104e-09,
+            "asym": 2.242133284380316e-09
+          }
+        },
+        "oblate_ar3": {
+          "axes": [
+            3.0,
+            3.0,
+            1.0
+          ],
+          "fine": {
+            "nodes": 660,
+            "sources": 560,
+            "trans_pct": 0.022666921526093287,
+            "rot_pct": 0.05018375717132928,
+            "offdiag": 0.00018863687155986155,
+            "asym": 0.0003632617930361275
+          },
+          "Xfine": {
+            "nodes": 1400,
+            "sources": 1190,
+            "trans_pct": 0.008865046313832892,
+            "rot_pct": 0.01858654191098097,
+            "offdiag": 2.1959430400298024e-05,
+            "asym": 2.7735924809173016e-05
+          }
+        },
+        "oblateSpheroid_x1p5": {
+          "axes": [
+            3.0,
+            3.0,
+            1.5
+          ],
+          "fine": {
+            "nodes": 678,
+            "sources": 593,
+            "trans_pct": 0.0005420099328468098,
+            "rot_pct": 0.0016584390733820342,
+            "offdiag": 9.666747439250933e-06,
+            "asym": 1.1203790076356732e-05
+          },
+          "Xfine": {
+            "nodes": 1328,
+            "sources": 1162,
+            "trans_pct": 7.937055037654517e-05,
+            "rot_pct": 0.00014506928629476334,
+            "offdiag": 7.791129163375114e-07,
+            "asym": 1.2758999549126805e-06
+          }
+        },
+        "prolateSpheroid_x0p75": {
+          "axes": [
+            0.75,
+            0.75,
+            2.25
+          ],
+          "fine": {
+            "nodes": 654,
+            "sources": 572,
+            "trans_pct": 0.0006127828340418695,
+            "rot_pct": 0.0018805631429197334,
+            "offdiag": 1.6096150827674026e-05,
+            "asym": 2.2001878081927774e-05
+          },
+          "Xfine": {
+            "nodes": 1388,
+            "sources": 1214,
+            "trans_pct": 9.415970978476906e-05,
+            "rot_pct": 0.00033469296256694037,
+            "offdiag": 7.785851629066216e-07,
+            "asym": 1.2907829250981211e-06
+          }
+        }
+      }
+    },
+    "N": [
+      200
+    ],
+    "phi": [
+      0.025,
+      0.05,
+      0.075,
+      0.1,
+      0.15,
+      0.2
+    ],
+    "seeds": 10,
+    "contact_floor": 1.05
+  }
+}

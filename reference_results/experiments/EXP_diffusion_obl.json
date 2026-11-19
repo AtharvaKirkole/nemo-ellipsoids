@@ -1,0 +1,133 @@
+{
+  "0.05|mfs": {
+    "translation": 0.9193340777789656,
+    "rotation": 0.9627788277083535,
+    "particles": 32,
+    "configs": 3
+  },
+  "0.05|far": {
+    "translation": 1.0,
+    "rotation": 1.0,
+    "particles": 32,
+    "configs": 3
+  },
+  "0.05|pair": {
+    "translation": 0.9235923463702037,
+    "rotation": 0.9617184319944515,
+    "particles": 32,
+    "configs": 3
+  },
+  "0.05|full": {
+    "translation": 0.9235923463702037,
+    "rotation": 0.9617184319944515,
+    "particles": 32,
+    "configs": 3
+  },
+  "0.1|mfs": {
+    "translation": 0.8294983266625354,
+    "rotation": 0.8993365412569405,
+    "particles": 37,
+    "configs": 3
+  },
+  "0.1|far": {
+    "translation": 1.0,
+    "rotation": 1.0,
+    "particles": 37,
+    "configs": 3
+  },
+  "0.1|pair": {
+    "translation": 0.8206084935326672,
+    "rotation": 0.8919640110150441,
+    "particles": 37,
+    "configs": 3
+  },
+  "0.1|full": {
+    "translation": 0.8206084935326672,
+    "rotation": 0.8919640110150441,
+    "particles": 37,
+    "configs": 3
+  },
+  "0.2|mfs": {
+    "translation": 0.7035234038486249,
+    "rotation": 0.7761332291018324,
+    "particles": 31,
+    "configs": 3
+  },
+  "0.2|far": {
+    "translation": 1.0,
+    "rotation": 1.0,
+    "particles": 31,
+    "configs": 3
+  },
+  "0.2|pair": {
+    "translation": 0.6520236156605436,
+    "rotation": 0.7369512600731349,
+    "particles": 31,
+    "configs": 3
+  },
+  "0.2|full": {
+    "translation": 0.6520236156605436,
+    "rotation": 0.736951260073135,
+    "particles": 31,
+    "configs": 3
+  },
+  "conditions": {
+    "models": {
+      "pair": {
+        "file": "data/final/models/pair_obl.pt",
+        "form": "spheroid",
+        "inputs": 12,
+        "true": 12,
+        "pseudo": 27,
+        "r_cut": 12.0,
+        "cut": "distance",
+        "width": 128,
+        "parameters": 54812,
+        "train_sets": [
+          "oblateSpheroid__oblateSpheroid"
+        ],
+        "train_rows": 29490,
+        "steps": 200000,
+        "seed": 0
+      },
+      "nbody": {
+        "file": "data/final/models/nbody_obl.pt",
+        "form": "spheroid",
+        "inputs": 172,
+        "true": 52,
+        "pseudo": 67,
+        "bands": 8,
+        "pair_cutoff": 12.0,
+        "neighbor_cutoff": 12.0,
+        "width": 128,
+        "parameters": 62446,
+        "clusters": "obl",
+        "configs": 264,
+        "rows": 157186,
+        "neighbours_mean": 27.356405786774904,
+        "seed": 0
+      }
+    },
+    "truth": {
+      "acc": "fine",
+      "ref_acc": null,
+      "clouds": {
+        "oblateSpheroid": {
+          "axes": [
+            2.0,
+            2.0,
+            1.0
+          ],
+          "fine": {
+            "nodes": 678,
+            "sources": 593,
+            "trans_pct": 0.0005801580747477608,
+            "rot_pct": 0.0016304959037594102,
+            "offdiag": 9.626579339917792e-06,
+            "asym": 1.1203789682412676e-05
+          }
+        }
+      }
+    }
+  }
+}

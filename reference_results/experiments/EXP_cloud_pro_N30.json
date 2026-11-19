@@ -1,0 +1,231 @@
+{
+  "Rc": 9.654893846056298,
+  "U0": 3.7286790071446303,
+  "dt": 0.051787208432564326,
+  "mfs": {
+    "steps": 300,
+    "seconds": 111.3,
+    "marks": [
+      {
+        "z": 0.25080831295721634,
+        "horizontal": 5.860751507099001,
+        "vertical": 4.72551249413708,
+        "left_behind": 0.0,
+        "alignment": 0.012204598345958587,
+        "step": 0
+      },
+      {
+        "z": -14.433457745930834,
+        "horizontal": 5.981073876793548,
+        "vertical": 4.619346720203052,
+        "left_behind": 0.0,
+        "alignment": -0.026375554219448986,
+        "step": 75
+      },
+      {
+        "z": -29.063380145538456,
+        "horizontal": 6.1314346291411415,
+        "vertical": 4.38927225997253,
+        "left_behind": 0.0,
+        "alignment": 0.06705151219928855,
+        "step": 150
+      },
+      {
+        "z": -58.0474659659525,
+        "horizontal": 6.453572132507773,
+        "vertical": 3.973031134361321,
+        "left_behind": 0.0,
+        "alignment": 0.26127268447670443,
+        "step": 300
+      }
+    ]
+  },
+  "far": {
+    "steps": 300,
+    "seconds": 44.8,
+    "marks": [
+      {
+        "z": 0.25080831295721634,
+        "horizontal": 5.860751507099001,
+        "vertical": 4.72551249413708,
+        "left_behind": 0.0,
+        "alignment": 0.012204598345958587,
+        "step": 0
+      },
+      {
+        "z": -14.767083100346058,
+        "horizontal": 6.000588620348994,
+        "vertical": 4.5710496698591365,
+        "left_behind": 0.0,
+        "alignment": -0.017269015152009716,
+        "step": 75
+      },
+      {
+        "z": -29.726370911471292,
+        "horizontal": 6.198951696437603,
+        "vertical": 4.262340850642597,
+        "left_behind": 0.0,
+        "alignment": 0.08440178082363639,
+        "step": 150
+      },
+      {
+        "z": -59.24890464849316,
+        "horizontal": 6.439522431679565,
+        "vertical": 3.9334482922227005,
+        "left_behind": 0.0,
+        "alignment": 0.24653553006766085,
+        "step": 300
+      }
+    ],
+    "vs_mfs": {
+      "step": 300,
+      "pos": 3.688118342548392,
+      "axis": 28.27858457222025
+    }
+  },
+  "pair": {
+    "steps": 300,
+    "seconds": 99.6,
+    "marks": [
+      {
+        "z": 0.25080831295721634,
+        "horizontal": 5.860751507099001,
+        "vertical": 4.72551249413708,
+        "left_behind": 0.0,
+        "alignment": 0.012204598345958587,
+        "step": 0
+      },
+      {
+        "z": -14.639417960048497,
+        "horizontal": 5.9888596541880865,
+        "vertical": 4.57765106851648,
+        "left_behind": 0.0,
+        "alignment": -0.024470318651732072,
+        "step": 75
+      },
+      {
+        "z": -29.457018667020442,
+        "horizontal": 6.191836829770144,
+        "vertical": 4.253019687142798,
+        "left_behind": 0.0,
+        "alignment": 0.051931422385094614,
+        "step": 150
+      },
+      {
+        "z": -58.802340679468905,
+        "horizontal": 6.362398602910316,
+        "vertical": 3.9397555390196755,
+        "left_behind": 0.0,
+        "alignment": 0.25155176592936923,
+        "step": 300
+      }
+    ],
+    "vs_mfs": {
+      "step": 300,
+      "pos": 3.266361954777296,
+      "axis": 30.467710792641117
+    }
+  },
+  "full": {
+    "steps": 300,
+    "seconds": 114.8,
+    "marks": [
+      {
+        "z": 0.25080831295721634,
+        "horizontal": 5.860751507099001,
+        "vertical": 4.72551249413708,
+        "left_behind": 0.0,
+        "alignment": 0.012204598345958587,
+        "step": 0
+      },
+      {
+        "z": -14.348611501114618,
+        "horizontal": 5.989790600563621,
+        "vertical": 4.579487251629622,
+        "left_behind": 0.0,
+        "alignment": -0.02471673296577448,
+        "step": 75
+      },
+      {
+        "z": -28.893311718158177,
+        "horizontal": 6.156078974469261,
+        "vertical": 4.295669719083085,
+        "left_behind": 0.0,
+        "alignment": 0.06165159156212346,
+        "step": 150
+      },
+      {
+        "z": -57.74174151948545,
+        "horizontal": 6.358765605254043,
+        "vertical": 3.901133505373558,
+        "left_behind": 0.0,
+        "alignment": 0.24257878509016645,
+        "step": 300
+      }
+    ],
+    "vs_mfs": {
+      "step": 300,
+      "pos": 1.1727630660402621,
+      "axis": 12.340262349084199
+    }
+  },
+  "conditions": {
+    "models": {
+      "pair": {
+        "file": "data/final/models/pair_pro.pt",
+        "form": "spheroid",
+        "inputs": 12,
+        "true": 12,
+        "pseudo": 27,
+        "r_cut": 12.0,
+        "cut": "distance",
+        "width": 128,
+        "parameters": 54812,
+        "train_sets": [
+          "prolateSpheroid__prolateSpheroid"
+        ],
+        "train_rows": 29490,
+        "steps": 200000,
+        "seed": 0
+      },
+      "nbody": {
+        "file": "data/final/models/nbody_pro.pt",
+        "form": "spheroid",
+        "inputs": 172,
+        "true": 52,
+        "pseudo": 67,
+        "bands": 8,
+        "pair_cutoff": 12.0,
+        "neighbor_cutoff": 12.0,
+        "width": 128,
+        "parameters": 62446,
+        "clusters": "pro",
+        "configs": 263,
+        "rows": 173740,
+        "neighbours_mean": 30.968562219408312,
+        "seed": 0
+      }
+    },
+    "truth": {
+      "acc": "fine",
+      "ref_acc": null,
+      "clouds": {
+        "prolateSpheroid": {
+          "axes": [
+            1.0,
+            1.0,
+            3.0
+          ],
+          "fine": {
+            "nodes": 654,
+            "sources": 572,
+            "trans_pct": 0.000443450516107724,
+            "rot_pct": 0.0019716059255880936,
+            "offdiag": 1.6451992226833644e-05,
+            "asym": 1.6341509596281183e-05
+          }
+        }
+      }
+    }
+  }
+}

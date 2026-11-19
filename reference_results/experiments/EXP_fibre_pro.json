@@ -1,0 +1,87 @@
+{
+  "steps": 1200,
+  "mfs_sag": 2.4012419943267957,
+  "far": {
+    "steps": 1200,
+    "sag": 2.4237193307235607,
+    "sag_err_pct": 0.9360712685297943,
+    "step": 1200,
+    "pos": 0.06456023275092598,
+    "axis": 0.06300296660108241
+  },
+  "pair": {
+    "steps": 1200,
+    "sag": 2.401623565735793,
+    "sag_err_pct": 0.015890585367860543,
+    "step": 1200,
+    "pos": 0.019677609347690188,
+    "axis": 0.04657346195237132
+  },
+  "full": {
+    "steps": 1200,
+    "sag": 2.4117564201071353,
+    "sag_err_pct": 0.4378744751749752,
+    "step": 1200,
+    "pos": 0.01720150546712573,
+    "axis": 0.08059697126629879
+  },
+  "conditions": {
+    "models": {
+      "pair": {
+        "file": "data/final/models/pair_pro.pt",
+        "form": "spheroid",
+        "inputs": 12,
+        "true": 12,
+        "pseudo": 27,
+        "r_cut": 12.0,
+        "cut": "distance",
+        "width": 128,
+        "parameters": 54812,
+        "train_sets": [
+          "prolateSpheroid__prolateSpheroid"
+        ],
+        "train_rows": 29490,
+        "steps": 200000,
+        "seed": 0
+      },
+      "nbody": {
+        "file": "data/final/models/nbody_pro.pt",
+        "form": "spheroid",
+        "inputs": 172,
+        "true": 52,
+        "pseudo": 67,
+        "bands": 8,
+        "pair_cutoff": 12.0,
+        "neighbor_cutoff": 12.0,
+        "width": 128,
+        "parameters": 62446,
+        "clusters": "pro",
+        "configs": 263,
+        "rows": 173740,
+        "neighbours_mean": 30.968562219408312,
+        "seed": 0
+      }
+    },
+    "truth": {
+      "acc": "fine",
+      "ref_acc": null,
+      "clouds": {
+        "prolateSpheroid": {
+          "axes": [
+            1.0,
+            1.0,
+            3.0
+          ],
+          "fine": {
+            "nodes": 654,
+            "sources": 572,
+            "trans_pct": 0.000443450516107724,
+            "rot_pct": 0.0019716059255880936,
+            "offdiag": 1.6451992226833644e-05,
+            "asym": 1.6341509596281183e-05
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,178 @@
+{
+  "Rc": 18.171205928321378,
+  "U0": 13.207708995578521,
+  "dt": 0.027516060407455162,
+  "far": {
+    "steps": 400,
+    "seconds": 385.3,
+    "marks": [
+      {
+        "z": -0.03440936455105632,
+        "horizontal": 11.833325966622919,
+        "vertical": 8.445038329913146,
+        "left_behind": 0.0,
+        "alignment": 0.04138774446096855,
+        "step": 0
+      },
+      {
+        "z": -35.62788808343156,
+        "horizontal": 11.834545073207149,
+        "vertical": 8.447496794419028,
+        "left_behind": 0.0,
+        "alignment": 0.10007108006555272,
+        "step": 100
+      },
+      {
+        "z": -71.13021931803364,
+        "horizontal": 12.01220735066262,
+        "vertical": 8.070704543968356,
+        "left_behind": 0.0,
+        "alignment": 0.23755512462941805,
+        "step": 200
+      },
+      {
+        "z": -142.2416246113532,
+        "horizontal": 12.061422256703958,
+        "vertical": 7.755578785719006,
+        "left_behind": 0.0,
+        "alignment": 0.09370328303322678,
+        "step": 400
+      }
+    ]
+  },
+  "pair": {
+    "steps": 93,
+    "seconds": 124.1,
+    "marks": [
+      {
+        "z": -0.03440936455105632,
+        "horizontal": 11.833325966622919,
+        "vertical": 8.445038329913146,
+        "left_behind": 0.0,
+        "alignment": 0.04138774446096855,
+        "step": 0
+      },
+      {
+        "z": -33.02118667366523,
+        "horizontal": 11.830393143629323,
+        "vertical": 8.442252180125823,
+        "left_behind": 0.0,
+        "alignment": 0.09049807305308125,
+        "step": 93
+      },
+      {
+        "z": -33.02118667366523,
+        "horizontal": 11.830393143629323,
+        "vertical": 8.442252180125823,
+        "left_behind": 0.0,
+        "alignment": 0.09049807305308125,
+        "step": 93
+      },
+      {
+        "z": -33.02118667366523,
+        "horizontal": 11.830393143629323,
+        "vertical": 8.442252180125823,
+        "left_behind": 0.0,
+        "alignment": 0.09049807305308125,
+        "step": 93
+      }
+    ]
+  },
+  "full": {
+    "steps": 138,
+    "seconds": 213.2,
+    "marks": [
+      {
+        "z": -0.03440936455105632,
+        "horizontal": 11.833325966622919,
+        "vertical": 8.445038329913146,
+        "left_behind": 0.0,
+        "alignment": 0.04138774446096855,
+        "step": 0
+      },
+      {
+        "z": -35.00981558943191,
+        "horizontal": 11.861479335530365,
+        "vertical": 8.377973533408692,
+        "left_behind": 0.0,
+        "alignment": 0.09544705925728185,
+        "step": 100
+      },
+      {
+        "z": -48.26072133726377,
+        "horizontal": 11.932084470450135,
+        "vertical": 8.229330690772747,
+        "left_behind": 0.0,
+        "alignment": 0.1394549160887194,
+        "step": 138
+      },
+      {
+        "z": -48.26072133726377,
+        "horizontal": 11.932084470450135,
+        "vertical": 8.229330690772747,
+        "left_behind": 0.0,
+        "alignment": 0.1394549160887194,
+        "step": 138
+      }
+    ]
+  },
+  "conditions": {
+    "models": {
+      "pair": {
+        "file": "data/final/models/pair_pro.pt",
+        "form": "spheroid",
+        "inputs": 12,
+        "true": 12,
+        "pseudo": 27,
+        "r_cut": 12.0,
+        "cut": "distance",
+        "width": 128,
+        "parameters": 54812,
+        "train_sets": [
+          "prolateSpheroid__prolateSpheroid"
+        ],
+        "train_rows": 29490,
+        "steps": 200000,
+        "seed": 0
+      },
+      "nbody": {
+        "file": "data/final/models/nbody_pro.pt",
+        "form": "spheroid",
+        "inputs": 172,
+        "true": 52,
+        "pseudo": 67,
+        "bands": 8,
+        "pair_cutoff": 12.0,
+        "neighbor_cutoff": 12.0,
+        "width": 128,
+        "parameters": 62446,
+        "clusters": "pro",
+        "configs": 263,
+        "rows": 173740,
+        "neighbours_mean": 30.968562219408312,
+        "seed": 0
+      }
+    },
+    "truth": {
+      "acc": "fine",
+      "ref_acc": null,
+      "clouds": {
+        "prolateSpheroid": {
+          "axes": [
+            1.0,
+            1.0,
+            3.0
+          ],
+          "fine": {
+            "nodes": 654,
+            "sources": 572,
+            "trans_pct": 0.000443450516107724,
+            "rot_pct": 0.0019716059255880936,
+            "offdiag": 1.6451992226833644e-05,
+            "asym": 1.6341509596281183e-05
+          }
+        }
+      }
+    }
+  }
+}

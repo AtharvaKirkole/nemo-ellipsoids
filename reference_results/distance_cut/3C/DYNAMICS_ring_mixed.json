@@ -1,0 +1,172 @@
+{
+  "truth_steps": 123,
+  "fell": 16.754269376687994,
+  "far": {
+    "steps": 41,
+    "compared_at": 41,
+    "com_pct": 5.251658768030956,
+    "pos_max": 0.47228864714258817,
+    "axis_deg_max": 7.593563729577149
+  },
+  "pair": {
+    "steps": 70,
+    "compared_at": 70,
+    "com_pct": 2.0939200999747962,
+    "pos_max": 0.3695260899643415,
+    "axis_deg_max": 6.650273280031517
+  },
+  "full": {
+    "steps": 83,
+    "compared_at": 83,
+    "com_pct": 0.37440631948779396,
+    "pos_max": 0.12878253124651817,
+    "axis_deg_max": 3.3888580591428927
+  },
+  "mfs": {
+    "steps": 123,
+    "compared_at": 123,
+    "com_pct": 0.006395415734456492,
+    "pos_max": 0.0023140284864240877,
+    "axis_deg_max": 0.24524604949775694
+  },
+  "conditions": {
+    "models": {
+      "pair": {
+        "file": "data/final/models/pair_mixed.pt",
+        "form": "triaxial",
+        "inputs": 22,
+        "true": 34,
+        "pseudo": 61,
+        "r_cut": 14.0,
+        "cut": "distance",
+        "width": 128,
+        "parameters": 84988,
+        "train_sets": [
+          "triaxial_123__triaxial_123",
+          "prolateSpheroid__prolateSpheroid",
+          "oblateSpheroid__oblateSpheroid",
+          "triaxial_123__prolateSpheroid",
+          "triaxial_123__oblateSpheroid"
+        ],
+        "train_rows": 73722,
+        "steps": 400000,
+        "seed": 0
+      },
+      "nbody": {
+        "file": "data/final/models/nbody_mixed.pt",
+        "form": "triaxial",
+        "inputs": 182,
+        "true": 74,
+        "pseudo": 101,
+        "bands": 8,
+        "pair_cutoff": 14.0,
+        "neighbor_cutoff": 14.0,
+        "width": 128,
+        "parameters": 71006,
+        "clusters": "mixed",
+        "configs": 261,
+        "rows": 194572,
+        "neighbours_mean": 34.548187817363235,
+        "seed": 0
+      },
+      "nself": {
+        "file": "data/final/models/nself_mixed.pt",
+        "inputs": 114,
+        "true": 43,
+        "pseudo": 40,
+        "bands": 8,
+        "neighbor_cutoff": 14.0,
+        "width": 128,
+        "rows": 7744,
+        "pairwise_sum": 2.286712884902954,
+        "with_self_model": 1.4017443656921387
+      }
+    },
+    "truth": {
+      "acc": "fine",
+      "ref_acc": "Xfine",
+      "clouds": {
+        "triaxial_123": {
+          "axes": [
+            1.0,
+            2.0,
+            3.0
+          ],
+          "fine": {
+            "nodes": 660,
+            "sources": 560,
+            "trans_pct": 0.007366497358007873,
+            "rot_pct": 0.0054683370177777135,
+            "offdiag": 6.386382608464249e-05,
+            "asym": 0.00010471455333953413
+          },
+          "Xfine": {
+            "nodes": 1400,
+            "sources": 1190,
+            "trans_pct": 0.0020247019276276035,
+            "rot_pct": 0.0011232603636113225,
+            "offdiag": 1.5824213482437402e-05,
+            "asym": 2.0054248118045188e-05
+          }
+        },
+        "prolateSpheroid": {
+          "axes": [
+            1.0,
+            1.0,
+            3.0
+          ],
+          "fine": {
+            "nodes": 654,
+            "sources": 572,
+            "trans_pct": 0.000443450516107724,
+            "rot_pct": 0.0019716059255880936,
+            "offdiag": 1.6451992226833644e-05,
+            "asym": 1.6341509596281183e-05
+          },
+          "Xfine": {
+            "nodes": 1388,
+            "sources": 1214,
+            "trans_pct": 8.836640150722275e-05,
+            "rot_pct": 0.00034470878134129634,
+            "offdiag": 7.657411559473042e-07,
+            "asym": 1.1709955265918085e-06
+          }
+        },
+        "oblateSpheroid": {
+          "axes": [
+            2.0,
+            2.0,
+            1.0
+          ],
+          "fine": {
+            "nodes": 678,
+            "sources": 593,
+            "trans_pct": 0.0005801580747477608,
+            "rot_pct": 0.0016304959037594102,
+            "offdiag": 9.626579339917792e-06,
+            "asym": 1.1203789682412676e-05
+          },
+          "Xfine": {
+            "nodes": 1328,
+            "sources": 1162,
+            "trans_pct": 8.099124432225935e-05,
+            "rot_pct": 0.0001433523442839757,
+            "offdiag": 7.79147199242463e-07,
+            "asym": 1.275879856204477e-06
+          }
+        }
+      }
+    },
+    "case": "ring",
+    "shapes": [
+      "triaxial_123",
+      "prolateSpheroid",
+      "oblateSpheroid",
+      "triaxial_123",
+      "prolateSpheroid"
+    ],
+    "contact": 1.25,
+    "dt": 0.1,
+    "steps": 600
+  }
+}

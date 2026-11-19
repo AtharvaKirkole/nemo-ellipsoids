@@ -1,0 +1,119 @@
+{
+  "truth_steps": 1500,
+  "fell": 81.08009434860449,
+  "far": {
+    "steps": 1500,
+    "compared_at": 1500,
+    "com_pct": 0.032987145504601516,
+    "pos_max": 0.033846580884987536,
+    "axis_deg_max": 0.26261006942432064
+  },
+  "pair": {
+    "steps": 1500,
+    "compared_at": 1500,
+    "com_pct": 0.004340763793159452,
+    "pos_max": 0.0039185513682678955,
+    "axis_deg_max": 0.17502596632754974
+  },
+  "full": {
+    "steps": 1500,
+    "compared_at": 1500,
+    "com_pct": 0.004340763793159452,
+    "pos_max": 0.0039185513682678955,
+    "axis_deg_max": 0.17502596632754974
+  },
+  "mfs": {
+    "steps": 1500,
+    "compared_at": 1500,
+    "com_pct": 0.012686076545956975,
+    "pos_max": 0.011864278856455806,
+    "axis_deg_max": 0.2850615903482386
+  },
+  "conditions": {
+    "models": {
+      "pair": {
+        "file": "data/final/models/pair_t123.pt",
+        "form": "triaxial",
+        "inputs": 22,
+        "true": 34,
+        "pseudo": 61,
+        "r_cut": 14.0,
+        "cut": "distance",
+        "width": 128,
+        "parameters": 84988,
+        "train_sets": [
+          "triaxial_123__triaxial_123"
+        ],
+        "train_rows": 29490,
+        "steps": 200000,
+        "seed": 0
+      },
+      "nbody": {
+        "file": "data/final/models/nbody_t123.pt",
+        "form": "triaxial",
+        "inputs": 182,
+        "true": 74,
+        "pseudo": 101,
+        "bands": 8,
+        "pair_cutoff": 14.0,
+        "neighbor_cutoff": 14.0,
+        "width": 128,
+        "parameters": 71006,
+        "clusters": "t123",
+        "configs": 389,
+        "rows": 201350,
+        "neighbours_mean": 29.335872858207104,
+        "seed": 0
+      },
+      "nself": {
+        "file": "data/final/models/nself_t123.pt",
+        "inputs": 114,
+        "true": 43,
+        "pseudo": 40,
+        "bands": 8,
+        "neighbor_cutoff": 14.0,
+        "width": 128,
+        "rows": 9856,
+        "pairwise_sum": 2.164060354232788,
+        "with_self_model": 1.1451524496078491
+      }
+    },
+    "truth": {
+      "acc": "fine",
+      "ref_acc": "Xfine",
+      "clouds": {
+        "triaxial_123": {
+          "axes": [
+            1.0,
+            2.0,
+            3.0
+          ],
+          "fine": {
+            "nodes": 660,
+            "sources": 560,
+            "trans_pct": 0.007366497358007873,
+            "rot_pct": 0.0054683370177777135,
+            "offdiag": 6.386382608464249e-05,
+            "asym": 0.00010471455333953413
+          },
+          "Xfine": {
+            "nodes": 1400,
+            "sources": 1190,
+            "trans_pct": 0.0020247019276276035,
+            "rot_pct": 0.0011232603636113225,
+            "offdiag": 1.5824213482437402e-05,
+            "asym": 2.0054248118045188e-05
+          }
+        }
+      }
+    },
+    "case": "pair",
+    "shapes": [
+      "triaxial_123",
+      "triaxial_123"
+    ],
+    "contact": 1.5,
+    "dt": 0.1,
+    "steps": 1500
+  }
+}

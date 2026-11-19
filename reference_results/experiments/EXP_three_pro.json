@@ -1,0 +1,143 @@
+{
+  "steps": 1500,
+  "fell": 139.72081122962905,
+  "MFS started 0.001 away": {
+    "steps": 1500,
+    "errors": [
+      {
+        "step": 375,
+        "pos": 0.0031561264944660024,
+        "axis": 0.047384872586223176
+      },
+      {
+        "step": 750,
+        "pos": 0.010165649390986423,
+        "axis": 0.09527732173403279
+      },
+      {
+        "step": 1500,
+        "pos": 0.019304302563328955,
+        "axis": 0.1683900648367944
+      }
+    ]
+  },
+  "far field": {
+    "steps": 1500,
+    "errors": [
+      {
+        "step": 375,
+        "pos": 0.5197636697279039,
+        "axis": 7.438778602993881
+      },
+      {
+        "step": 750,
+        "pos": 1.6178857777608775,
+        "axis": 19.965341093201243
+      },
+      {
+        "step": 1500,
+        "pos": 2.7438741982307095,
+        "axis": 22.176670595128435
+      }
+    ]
+  },
+  "+ two-body": {
+    "steps": 1500,
+    "errors": [
+      {
+        "step": 375,
+        "pos": 0.1671214481378048,
+        "axis": 3.887933508381681
+      },
+      {
+        "step": 750,
+        "pos": 1.3227426732556313,
+        "axis": 9.988586608642583
+      },
+      {
+        "step": 1500,
+        "pos": 2.994126017227516,
+        "axis": 12.092474867929099
+      }
+    ]
+  },
+  "+ many-body": {
+    "steps": 1500,
+    "errors": [
+      {
+        "step": 375,
+        "pos": 0.08625287279492573,
+        "axis": 1.75505802527498
+      },
+      {
+        "step": 750,
+        "pos": 0.6363914917412773,
+        "axis": 5.323445062905185
+      },
+      {
+        "step": 1500,
+        "pos": 1.411408635689279,
+        "axis": 7.378918994835728
+      }
+    ]
+  },
+  "conditions": {
+    "models": {
+      "pair": {
+        "file": "data/final/models/pair_pro.pt",
+        "form": "spheroid",
+        "inputs": 12,
+        "true": 12,
+        "pseudo": 27,
+        "r_cut": 12.0,
+        "cut": "distance",
+        "width": 128,
+        "parameters": 54812,
+        "train_sets": [
+          "prolateSpheroid__prolateSpheroid"
+        ],
+        "train_rows": 29490,
+        "steps": 200000,
+        "seed": 0
+      },
+      "nbody": {
+        "file": "data/final/models/nbody_pro.pt",
+        "form": "spheroid",
+        "inputs": 172,
+        "true": 52,
+        "pseudo": 67,
+        "bands": 8,
+        "pair_cutoff": 12.0,
+        "neighbor_cutoff": 12.0,
+        "width": 128,
+        "parameters": 62446,
+        "clusters": "pro",
+        "configs": 263,
+        "rows": 173740,
+        "neighbours_mean": 30.968562219408312,
+        "seed": 0
+      }
+    },
+    "truth": {
+      "acc": "fine",
+      "ref_acc": null,
+      "clouds": {
+        "prolateSpheroid": {
+          "axes": [
+            1.0,
+            1.0,
+            3.0
+          ],
+          "fine": {
+            "nodes": 654,
+            "sources": 572,
+            "trans_pct": 0.000443450516107724,
+            "rot_pct": 0.0019716059255880936,
+            "offdiag": 1.6451992226833644e-05,
+            "asym": 1.6341509596281183e-05
+          }
+        }
+      }
+    }
+  }
+}
