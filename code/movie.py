@@ -115,7 +115,11 @@ def main():
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     ap.add_argument("--title", default=None, help="first line of the movie's heading")
     ap.add_argument("--views", default="xyz", help="which views, in order (any of x, y, z)")
+    ap.add_argument("--only", choices=["both", "mfs", "model"], default="both",
+                    help="both: MFS solid + operator outlines (default); mfs: MFS alone; model: the operator alone, as solid bodies")
     ap.add_argument("--fps", type=int, default=15)
+    ap.add_argument("--dpi", type=int, default=100, help="resolution of the drawing (100 = 1620 x 640 pixels for three views)")
+    ap.add_argument("--bitrate", type=int, default=3600, help="mp4 bitrate, kbit/s")
     ap.add_argument("--frames", type=int, default=240, help="at most this many frames are drawn (steps are skipped evenly)")
     ap.add_argument("--still", type=float, default=None, help="also save one frame as PNG, at this fraction of the run (0-1)")
     ap.add_argument("--ffmpeg", default=None, help="path of the ffmpeg executable if it is not on PATH")
@@ -178,6 +182,7 @@ def render(args, Xt, Qt, Xm, Qm, shapes, dt, label, case, solid="MFS", title="",
     import matplotlib.pyplot as plt
     from matplotlib import animation
     views = [v for v in args.views if v in VIEWS] or list("xyz")
+    only = getattr(args, "only", "both")
     N, n = len(shapes), min(len(Xt), len(Xm))
     ffmpeg = args.ffmpeg or shutil.which("ffmpeg")
     if ffmpeg:
@@ -189,25 +194,28 @@ def render(args, Xt, Qt, Xm, Qm, shapes, dt, label, case, solid="MFS", title="",
     colours = plt.cm.tab10(np.arange(N) % 10)
     kinds = list(dict.fromkeys(shapes))
     what = ", ".join(f"{shapes.count(k)} x {k} ({':'.join(f'{a:g}' for a in axes_of(k))})" for k in kinds)
-    fig = plt.figure(figsize=(5.4 * len(views), 6.4), dpi=100)
+    fig = plt.figure(figsize=(5.4 * len(views), 6.4), dpi=getattr(args, "dpi", 100))
     axs = [fig.add_subplot(1, len(views), i + 1, projection="3d") for i in range(len(views))]
     fig.subplots_adjust(left=0.0, right=1.0, bottom=0.0, top=0.86, wspace=0.0)
 
     def draw(k):
         c = Xt[k].mean(0)
         err = float(np.linalg.norm(Xm[k] - Xt[k], axis=1).max())
-        cmin = min_contact(shapes, Xt[k], Qt[k])
+        own = (Xm, Qm) if only == "model" else (Xt, Qt)                # the bodies drawn solid
+        cmin = min_contact(shapes, own[0][k], own[1][k])
         closest = f"{cmin:.2f}" if np.isfinite(cmin) else "> 8 (far apart)"
-        mesh_t = [surface(shapes[p], Xt[k, p], Qt[k, p]) for p in range(N)]
-        mesh_m = [surface(shapes[p], Xm[k, p], Qm[k, p], 12, 8) for p in range(N)]
+        mesh_s = [surface(shapes[p], own[0][k, p], own[1][k, p]) for p in range(N)]
+        mesh_m = [surface(shapes[p], Xm[k, p], Qm[k, p], 12, 8) for p in range(N)] if only == "both" else []
+        path_s = Rm if only == "model" else Rt
         for ax, v in zip(axs, views):
             ax.cla()
             elev, azim, vtitle, depth = VIEWS[v]
             for p in range(N):
-                ax.plot_surface(*mesh_t[p], color=colours[p], alpha=0.75, linewidth=0, shade=True)
-                ax.plot_wireframe(*mesh_m[p], color="k", linewidth=0.45, alpha=0.8)
-                ax.plot(*(Rt[:k + 1, p] + c).T, color=colours[p], linewidth=1.5)
-                ax.plot(*(Rm[:k + 1, p] + c).T, color="k", linewidth=0.7, linestyle="--")
+                ax.plot_surface(*mesh_s[p], color=colours[p], alpha=0.75, linewidth=0, shade=True)
+                ax.plot(*(path_s[:k + 1, p] + c).T, color=colours[p], linewidth=1.5)
+                if only == "both":
+                    ax.plot_wireframe(*mesh_m[p], color="k", linewidth=0.45, alpha=0.8)
+                    ax.plot(*(Rm[:k + 1, p] + c).T, color="k", linewidth=0.7, linestyle="--")
             ax.set_xlim(c[0] - half, c[0] + half), ax.set_ylim(c[1] - half, c[1] + half), ax.set_zlim(c[2] - half, c[2] + half)
             try:
                 ax.set_box_aspect((1, 1, 1), zoom=1.3)        # matplotlib >= 3.6
@@ -220,11 +228,15 @@ def render(args, Xt, Qt, Xm, Qm, shapes, dt, label, case, solid="MFS", title="",
                 getattr(ax, f"set_{a}label")("" if a == depth else a)
             ax.tick_params(labelsize=6)
             ax.set_title(vtitle, fontsize=10, pad=-6)
+        axis_err = float(axis_error_deg(shapes, Qm[k], Qt[k]).max())
+        legend = {"both": f"solid = {solid}; black outline = {label}; lines = paths seen from the falling camera",
+                  "mfs": f"{solid} ALONE (the truth): the same run as the comparison movie, without the model; lines = paths",
+                  "model": f"the OPERATOR ALONE ({label}): the same run, every body moved by the model; lines = paths"}[only]
+        diff = {"both": f"outline off by {err:.3f} (position), {axis_err:.2f} deg (axis)",
+                "mfs": "", "model": f"differs from MFS by {err:.3f} (position), {axis_err:.2f} deg (axis)"}[only]
         fig.suptitle((f"{title}\n" if title else "") +
-                     f"{what}: {case}, settling under gravity (-z)\n"
-                     f"solid = {solid}; black outline = {label}; lines = paths seen from the falling camera\n"
-                     f"t = {k * dt:6.1f}   fallen {Xt[0].mean(0)[2] - c[2]:6.1f}   outline off by {err:.3f} (position), "
-                     f"{float(axis_error_deg(shapes, Qm[k], Qt[k]).max()):.2f} deg (axis)   closest contact factor "
+                     f"{what}: {case}, settling under gravity (-z); the camera falls with the MFS particles\n{legend}\n"
+                     f"t = {k * dt:6.1f}   fallen {Xt[0].mean(0)[2] - c[2]:6.1f}   {diff + '   ' if diff else ''}closest contact factor "
                      f"{closest}" + (f"   [run stopped by: {stopped}]" if stopped and k == n - 1 else ""),
                      fontsize=9)
 
@@ -237,7 +249,7 @@ def render(args, Xt, Qt, Xm, Qm, shapes, dt, label, case, solid="MFS", title="",
         fig.savefig(png)
         print(f"still -> {png}")
     out = args.out if ffmpeg else args.out.rsplit(".", 1)[0] + ".gif"
-    writer = animation.FFMpegWriter(fps=args.fps, bitrate=3600) if ffmpeg else animation.PillowWriter(fps=args.fps)
+    writer = animation.FFMpegWriter(fps=args.fps, bitrate=getattr(args, "bitrate", 3600)) if ffmpeg else animation.PillowWriter(fps=args.fps)
     animation.FuncAnimation(fig, draw, frames=frames, interval=1000 / args.fps).save(out, writer=writer)
     print(f"{len(frames)} frames, views {' '.join(views)} -> {out}" + ("" if ffmpeg else "   (no ffmpeg found: wrote a GIF)"))
 
